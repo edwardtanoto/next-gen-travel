@@ -1,26 +1,16 @@
-html,
+@import url('https://fonts.googleapis.com/css2?family=Oxygen+Mono&display=swap');
+
+.text-center {
+  text-align: center;
+}
 body {
-  padding: 0;
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  font-family: 'Oxygen Mono', monospace;
+  background-image: url('../public/gradients/group-vector.svg');
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+.mt-10 {
+  margin-top: 10em;
 }
-
-* {
-  box-sizing: border-box;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
-  body {
-    color: white;
-    background: black;
-  }
+.py-4 {
+  padding: 4em;
 }
