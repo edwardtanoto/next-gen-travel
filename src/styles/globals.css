@@ -1,0 +1,16 @@
+@import url("https://fonts.googleapis.com/css2?family=Oxygen+Mono&display=swap");
+
+.text-center {
+  text-align: center;
+}
+body {
+  font-family: "Oxygen Mono", monospace;
+  background-image: url("../../public/gradients/group-vector.svg");
+}
+
+.mt-10 {
+  margin-top: 10em;
+}
+.py-4 {
+  padding: 4em;
+}

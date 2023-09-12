@@ -1,8 +1,9 @@
 import React from 'react'
+import Mapbox from '../../components/Mapbox';
 
 const map = () => {
   return (
-    <div>map</div>
+    <Mapbox></Mapbox>
   )
 }
 
