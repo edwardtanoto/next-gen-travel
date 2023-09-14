@@ -13,7 +13,8 @@ export default async function handler(req, res) {
         {
           role: "system",
           content:
-            "Your job is to find location name and city name from text in this format below \n [location_name, city_name].",
+            "Your job is to find location name and city name from text in this format below. If there are multiple locations, add everything inside the array. \n [location_name, city_name].",
+
         },
         {
           role: "user",
