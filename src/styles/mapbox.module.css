@@ -44,7 +44,7 @@
 
 .listings .item .title {
   display: block;
-  color: #00853e;
+  color: #ce4b5c;
   font-weight: 700;
 }
 
@@ -54,7 +54,7 @@
 
 .listings .item.active .title,
 .listings .item .title:hover {
-  color: #8cc63f;
+  color: #df8692;
 }
 
 .listings .item.active {
@@ -73,7 +73,7 @@
 }
 
 .sidebar ::-webkit-scrollbar-thumb {
-  background: #00853e;
+  background: #ce4b5c;
   border-radius: 0;
 }
 
@@ -82,7 +82,7 @@
   cursor: pointer;
   height: 56px;
   width: 56px;
-  background-image: url(marker.png);
+  background-image: url(marker2.png);
 }
 
 /* Marker tweaks */

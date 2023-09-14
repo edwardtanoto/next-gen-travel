@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { makePostRequest } from "../lib/api";
 import { useRouter } from "next/navigation";
@@ -103,13 +103,23 @@ export default function Home() {
       const locationResult = await makePostRequest("/api/openai_location", {
         data: text,
       });
-      setLocations(locationResult.output.choices[0].message.content);
-      // to do next -> connect to serp api and find the coordinates and video ocr
-      push({ pathname: "/map", query: { location: locations } });
+      setLocations([
+        locationResult.output.choices[0].message.content,
+        "Curry Hyuga, Burlingame",
+        "Midway SF",
+      ]);
     } catch (error) {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    if (locations === undefined || locations.length != 0) {
+      console.log(locations);
+      // to do next -> connect to serp api and find the coordinates and video ocr
+      push({ pathname: "/map", query: { location: locations } });
+    }
+  }, [locations]);
 
   return (
     <div className="text-center mt-10">

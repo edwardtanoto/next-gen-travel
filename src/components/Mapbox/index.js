@@ -23,7 +23,7 @@ function Mapbox(props) {
     const fetchSerp = async () => {
       try {
         const serpResult = await makePostRequest(
-          "http://localhost:3001/api/serp",
+          "http://localhost:3000/api/serp",
           props.router.query.location
         );
         console.log(serpResult);
@@ -37,7 +37,7 @@ function Mapbox(props) {
     if (map.current) return; // initialize map only once
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/mapbox/streets-v12",
+      style: "mapbox://styles/justinlee38/clmi4lefy01oj01qzaap372l4",
       center: [lng, lat],
       zoom: zoom,
     });
@@ -142,16 +142,51 @@ function Mapbox(props) {
       /* Add details to the individual listing. */
       const details = listing.appendChild(document.createElement("div"));
       // details.innerHTML = `${store.properties.city} · `;
-      if (store.properties.phone) {
-        details.innerHTML += `${store.properties.phoneFormatted}`;
-      }
-      if (store.properties.distance) {
-        const roundedDistance =
-          Math.round(store.properties.distance * 100) / 100;
-        details.innerHTML += `<div><strong>${roundedDistance} miles away</strong></div>`;
+      if (store.properties.permanently_closed) {
+        details.innerHTML += `<div>This place is permanently closed!!!</div>`;
+      } else {
+        if (store.properties.externalLinks.googlemap) {
+          details.innerHTML = `<img src=\"${
+            store.properties.images[0]
+              ? store.properties.images[0].original
+              : ""
+          }" width=\"400px\" height=\"150px\">`;
+        }
+        if (store.properties.phone) {
+          details.innerHTML += `${store.properties.phone}`;
+        }
+        if (store.properties.distance) {
+          const roundedDistance =
+            Math.round(store.properties.distance * 100) / 100;
+          details.innerHTML += `<div><strong>${roundedDistance} miles away</strong></div>`;
+        }
+        if (store.properties.type) {
+          details.innerHTML += `<div><strong>${store.properties.type}</strong></div>`;
+        }
+        if (store.properties.description) {
+          details.innerHTML += `<div><strong>${store.properties.description}</strong></div>`;
+        }
+        if (store.properties.price) {
+          details.innerHTML += `<div><strong>${store.properties.price}</strong></div>`;
+        }
+        if (store.properties.rating && store.properties.reviewCount) {
+          details.innerHTML += `<div><strong>${store.properties.rating} star (${store.properties.reviewCount})</strong></div>`;
+        }
+        if (store.properties.address) {
+          details.innerHTML += `<div><strong>${store.properties.address}</strong></div>`;
+        }
+        if (store.properties.timeSpend) {
+          details.innerHTML += `<div><strong>People normally spend ${store.properties.timeSpend}</strong></div>`;
+        }
+        if (store.properties.externalLinks.website) {
+          details.innerHTML += `<div><a href=${store.properties.externalLinks.website}>website</a></div>`;
+        }
+        if (store.properties.externalLinks.googlemap) {
+          details.innerHTML += `<div><a href=${store.properties.externalLinks.googlemap}>Google Map</a></div>`;
+        }
       }
 
-      link.addEventListener("click", function () {
+      link.addEventListener("mouseover", function () {
         for (const feature of stores.features) {
           if (this.id === `link-${feature.properties.id}`) {
             flyToStore(feature);
@@ -175,6 +210,10 @@ function Mapbox(props) {
       /* Assign a unique `id` to the marker. */
       el.id = `marker-${marker.properties.id}`;
       /* Assign the `marker` class to each marker for styling. */
+      el.innerHTML += `🍽️`;
+      el.style.cssText =
+        "text-indent:17.5px;font-size: 20px;line-height: 35px;";
+
       el.className = `${styles.marker}`;
 
       el.addEventListener("click", (e) => {
@@ -207,7 +246,7 @@ function Mapbox(props) {
     <div className={styles.mapbox}>
       <div className={styles.sidebar}>
         <div className={styles.heading}>
-          <h1>Our locations</h1>
+          <h1>Locations</h1>
         </div>
         <div id="listings" className={styles.listings}></div>
       </div>
