@@ -17,8 +17,12 @@ const getSerpResult = (item) => {
 };
 
 const getMultiSerpResult = async (locations) => {
+  console.log(locations);
   var serpResult = [];
   var promises = locations.map(async (item) => {
+    console.log("item");
+    console.log(item);
+
     const json = await getSerpResult(item);
     serpResult.push(json);
     console.log("pushedSerp");
@@ -39,12 +43,13 @@ export default async function handler(req, res) {
     try {
       // console.log(serpOutput);
       console.log("Google");
-      console.log(req.body);
-      //   const serpOutput = await getMultiSerpResult([req.body]);
+      //   console.log(req.body);
+      //   const serpOutput = await getMultiSerpResult(req.body);
       console.log("Google2");
-      console.log(serpOutput);
+      //   console.log(serpOutput);
       const serpToMapboxDetail = addMapboxDetail(serpOutput);
       const result = addGeojsonDetail(serpToMapboxDetail);
+      console.log("send details to local");
       res.status(200).json({ result });
     } catch (err) {
       res.status(500).json({ error: "failed to load data" });
@@ -56,7 +61,7 @@ export default async function handler(req, res) {
 const addMapboxDetail = (data) => {
   // the callback. Use a better name
   console.log("test");
-  console.log(data);
+  //   console.log(data);
 
   // setGoogleList(data);
   //   console.log(data);
@@ -84,37 +89,15 @@ const addMapboxDetail = (data) => {
         ...item.knowledge_graph,
         mapbox: mapboxDetail,
       };
-      console.log(item.knowledge_graph);
+      //   console.log(item.knowledge_graph);
       tempListArr.push(item);
 
-      const geojsonFeature = {
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [
-            item.knowledge_graph.local_map.gps_coordinates.longitude,
-            item.knowledge_graph.local_map.gps_coordinates.latitude,
-          ],
-        },
-        properties: {
-          title: item.knowledge_graph.title,
-          type: item.knowledge_graph.type,
-          phoneFormatted: item.knowledge_graph.phone,
-          phone: "2022347336",
-          address: item.knowledge_graph.address,
-          city: "Washington DC",
-          country: "United States",
-          crossStreet: "at 15th St NW",
-          postalCode: "20005",
-          state: "D.C.",
-        },
-      };
       // geojsonList.features.push(geojsonFeature);
     }
   });
   //   console.log(tempListArr);
   console.log("in tempList");
-  console.log(tempListArr);
+  //   console.log(tempListArr);
   return tempListArr;
 };
 
@@ -135,21 +118,51 @@ const addGeojsonDetail = (tempData) => {
         ],
       },
       properties: {
-        title: item.knowledge_graph.title,
-        type: item.knowledge_graph.type,
-        phoneFormatted: item.knowledge_graph.phone,
-        phone: "2022347336",
-        address: item.knowledge_graph.address,
-        city: "Washington DC",
-        country: "United States",
-        crossStreet: "at 15th St NW",
-        postalCode: "20005",
-        state: "D.C.",
+        title: item.knowledge_graph.title ? item.knowledge_graph.title : "",
+        type: item.knowledge_graph.type ? item.knowledge_graph.type : "",
+        description: item.knowledge_graph.description
+          ? item.knowledge_graph.description
+          : "",
+        // emojiType: ,
+        price: item.knowledge_graph.price ? item.knowledge_graph.price : "",
+        rating: item.knowledge_graph.rating ? item.knowledge_graph.rating : "",
+        reviewCount: item.knowledge_graph.review_count
+          ? item.knowledge_graph.review_count
+          : "",
+        hours: item.knowledge_graph.hours ? item.knowledge_graph.hours : "",
+        phone: item.knowledge_graph.phone ? item.knowledge_graph.phone : "",
+        address: item.knowledge_graph.address
+          ? item.knowledge_graph.address
+          : "",
+        timeSpend:
+          item.knowledge_graph.popular_times &&
+          item.knowledge_graph.popular_times.typical_time_spent
+            ? item.knowledge_graph.popular_times.typical_time_spent
+            : "",
+        permanently_closed: item.knowledge_graph.permanently_closed
+          ? item.knowledge_graph.permanently_closed
+          : false,
+
+        externalLinks: {
+          // yelp: ,
+          // tripadvisor: ,
+          // uber: ,
+          // lyft: ,
+          // menu: ,
+          website: item.knowledge_graph.website
+            ? item.knowledge_graph.website
+            : "",
+          googlemap: item.knowledge_graph.directions
+            ? item.knowledge_graph.directions
+            : "",
+        },
+        images: item.inline_images ? item.inline_images : "",
       },
     };
     geojsonFeatureCollectionObj.features.push(geojsonFeatureObj);
   });
   console.log("in geojson");
-  console.log(geojsonFeatureCollectionObj);
+  //   console.log(geojsonFeatureCollectionObj);
+
   return geojsonFeatureCollectionObj;
 };
