@@ -15,7 +15,7 @@ function Mapbox(props) {
   const map = useRef(null);
   const [lng, setLng] = useState(-122.2679252);
   const [lat, setLat] = useState(37.5593266);
-  const [serpData, setSerpData] = useState();
+  const [serpData, setSerpData] = useState({});
   const [zoom, setZoom] = useState(7);
 
   useEffect(() => {
@@ -29,9 +29,7 @@ function Mapbox(props) {
           "/api/serp",
           `${props.router.query.location}`
         );
-        console.log(serpResult);
-        setSerpData(serpResult.result);
-        console.log("sd ", serpData);
+
         return serpResult.result;
       } catch (error) {
         console.error(error);
@@ -54,9 +52,12 @@ function Mapbox(props) {
 
     fetchSerp().then((serpResult) => {
       console.log(serpResult.features);
+      console.log(serpResult);
       serpResult.features.forEach(function (store, i) {
         store.properties.id = i;
       });
+
+      console.log(serpData);
 
       map.current.on("load", () => {
         /* Add the data to your map as a layer */
@@ -64,40 +65,16 @@ function Mapbox(props) {
           type: "geojson",
           data: serpResult,
         });
-
         buildLocationList(serpResult);
         addMarkers(serpResult);
       });
     });
+  }, [serpData]);
 
-    // map.current.on("click", (event: any) => {
-    //   /* Determine if a feature in the "locations" layer exists at that point. */
-    //   const features = map.current.queryRenderedFeatures(event.point, {
-    //     layers: ["locations"],
-    //   });
+  // useEffect(() => {
+  //   if (!map.current) return;
 
-    //   /* If it does not exist, return */
-    //   if (!features.length) return;
-
-    //   const clickedPoint = features[0];
-
-    //   /* Fly to the point */
-    //   flyToStore(clickedPoint);
-
-    //   /* Close all other popups and display popup for clicked store */
-    //   createPopUp(clickedPoint);
-
-    //   /* Highlight listing in sidebar (and remove highlight for all other listings) */
-    //   const activeItem = document.getElementsByClassName(`${styles.active}`);
-    //   if (activeItem[0]) {
-    //     activeItem[0].classList.remove(`${styles.active}`);
-    //   }
-    //   const listing = document.getElementById(
-    //     `listing-${clickedPoint.properties.id}`
-    //   );
-    //   listing.classList.add(`${styles.active}`);
-    // });
-  });
+  // }, [serpData]);
 
   function flyToStore(currentFeature) {
     map.current.flyTo({

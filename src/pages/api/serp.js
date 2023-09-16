@@ -1,7 +1,7 @@
 // import serpOutput from "../../../dummyData/serpOutput.json";
 const SerpApi = require("google-search-results-nodejs");
 const search = new SerpApi.GoogleSearch(process.env.SERP_API_KEY);
-
+const fs = require("fs");
 const params = {
   q: "",
   location: "San Francisco, California, United States",
@@ -11,19 +11,19 @@ const params = {
 };
 
 const getSerpResult = (item) => {
-  console.log("iteml14 ", item);
+  //   console.log("iteml14 ", item);
   return new Promise((resolve) => {
     search.json({ params, q: item[0] + item[1] }, resolve);
   });
 };
 
 const getMultiSerpResult = async (locations) => {
-  console.log("locations ", locations);
+  console.log("locations ", locations.length);
   locations = JSON.parse(locations.replace(/'/g, '"'));
   var serpResult = [];
   var promises = locations.map(async (item) => {
     console.log("item");
-    console.log(item);
+    // console.log(item);
 
     const json = await getSerpResult(item);
     serpResult.push(json);
@@ -33,9 +33,8 @@ const getMultiSerpResult = async (locations) => {
   });
 
   return Promise.all(promises).then(function (values) {
-    console.log(values);
-    console.log(serpResult);
-    // fs.writeFileSync("serpOutput.txt", JSON.stringify(serpResult, null, 4));
+    // console.log(values);
+    // console.log(serpResult);
     return serpResult;
   });
 };
@@ -48,10 +47,15 @@ export default async function handler(req, res) {
       //   console.log(req.body);
       const serpOutput = await getMultiSerpResult(req.body);
       console.log("Google2");
-      //   console.log(serpOutput);
+      fs.writeFileSync("serpOutput.txt", JSON.stringify(serpOutput, null, 4));
+
+      console.log(serpOutput.length);
       const serpToMapboxDetail = addMapboxDetail(serpOutput);
+      console.log("send details to local" + serpToMapboxDetail.length);
+
       const result = addGeojsonDetail(serpToMapboxDetail);
-      console.log("send details to local");
+      console.log("send details to local" + result.length);
+
       res.status(200).json({ result });
     } catch (err) {
       res.status(500).json({ error: "failed to load data" });
@@ -62,11 +66,8 @@ export default async function handler(req, res) {
 
 const addMapboxDetail = (data) => {
   // the callback. Use a better name
-  console.log("test");
-  //   console.log(data);
+  console.log("test in add mapbox detail first line " + data.length);
 
-  // setGoogleList(data);
-  //   console.log(data);
   var tempListArr = [];
 
   data.forEach((item, index) => {
@@ -93,17 +94,17 @@ const addMapboxDetail = (data) => {
       };
       //   console.log(item.knowledge_graph);
       tempListArr.push(item);
-
-      // geojsonList.features.push(geojsonFeature);
     }
   });
   //   console.log(tempListArr);
-  console.log("in tempList");
+  console.log("in tempList last line" + tempListArr.length);
+
   //   console.log(tempListArr);
   return tempListArr;
 };
 
 const addGeojsonDetail = (tempData) => {
+  console.log("in add geojson first line" + tempData.length);
   var geojsonFeatureCollectionObj = {
     type: "FeatureCollection",
     features: [],
@@ -164,7 +165,7 @@ const addGeojsonDetail = (tempData) => {
     geojsonFeatureCollectionObj.features.push(geojsonFeatureObj);
   });
   console.log("in geojson");
-  //   console.log(geojsonFeatureCollectionObj);
+  console.log(geojsonFeatureCollectionObj.length);
 
   return geojsonFeatureCollectionObj;
 };
