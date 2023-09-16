@@ -1,13 +1,99 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { makePostRequest } from "../lib/api";
 import { useRouter } from "next/navigation";
+import mapboxgl from "mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
+import "mapbox-gl/dist/mapbox-gl.css";
+import Typewriter from "../components/Typewriter";
+import wc from "which-country";
+
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
 export default function Home() {
   const { push } = useRouter();
+
   const [locations, setLocations] = useState([]);
   const [textFromSpeech, setTextFromSpeech] = useState("");
+  const [count, setCount] = useState(0);
   const [tiktokData, setTiktokData] = useState({ title: "", data: "" });
+  const map = useRef(null);
+  const mapContainer = useRef(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (map.current) return; // initialize map only once
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: "mapbox://styles/edwardtanoto12/clmiz8upt01t401rdhiuq5qgf",
+      projection: "globe",
+      center: [0, 0],
+      zoom: 1.2,
+    });
+
+    map.current.on("style.load", () => {
+      map.current.setFog(null);
+    });
+
+    // The following values can be changed to control rotation speed:
+
+    // At low zooms, complete a revolution every two minutes.
+    const secondsPerRevolution = 30;
+    // Above zoom level 5, do not rotate.
+    const maxSpinZoom = 5;
+    // Rotate at intermediate speeds between zoom levels 3 and 5.
+    const slowSpinZoom = 3;
+
+    let userInteracting = false;
+    let spinEnabled = true;
+
+    function spinGlobe() {
+      const zoom = map.current.getZoom();
+      if (spinEnabled && !userInteracting && zoom < maxSpinZoom) {
+        let distancePerSecond = 360 / secondsPerRevolution;
+        if (zoom > slowSpinZoom) {
+          // Slow spinning at higher zooms
+          const zoomDif = (maxSpinZoom - zoom) / (maxSpinZoom - slowSpinZoom);
+          distancePerSecond *= zoomDif;
+        }
+        const center = map.current.getCenter();
+        center.lng -= distancePerSecond;
+        // Smoothly animate the map over one second.
+        // When this animation is complete, it calls a 'moveend' event.
+        map.current.easeTo({ center, duration: 1000, easing: (n) => n });
+      }
+    }
+    spinGlobe();
+
+    map.current.on("mousedown", () => {
+      userInteracting = true;
+    });
+
+    // Restart spinning the globe when interaction is complete
+    map.current.on("mouseup", () => {
+      userInteracting = false;
+      spinGlobe();
+    });
+
+    // These events account for cases where the mouse has moved
+    // off the map, so 'mouseup' will not be fired.
+    map.current.on("dragend", () => {
+      userInteracting = false;
+      spinGlobe();
+    });
+    map.current.on("pitchend", () => {
+      userInteracting = false;
+      spinGlobe();
+    });
+    map.current.on("rotateend", () => {
+      userInteracting = false;
+      spinGlobe();
+    });
+
+    map.current.on("moveend", () => {
+      spinGlobe();
+    });
+  });
+
   const {
     register,
     handleSubmit,
@@ -32,7 +118,7 @@ export default function Home() {
     };
 
     try {
-      const tiktokResult = {
+      let tiktokResult = {
         link: "https://www.tiktok.com/@theguynextdoor3/video/7211918122868051205?is_from_webapp=1&sender_device=pc",
         data: {
           id: "7211918122868051205",
@@ -90,24 +176,30 @@ export default function Home() {
             "https://api16-normal-c-useast1a.tiktokv.com/aweme/v1/play/?video_id=v09044g40000cgatum3c77u47kpsgmfg&line=0&is_play_url=1&source=PackSourceEnum_AWEME_DETAIL&file_id=dbe8e427442044df94a8b7488c213898&item_id=7211918122868051205&signv3=dmlkZW9faWQ7ZmlsZV9pZDtpdGVtX2lkLmVhNzEzZDkzZjI4ZjU1MzJjYzI5OTVkMjk0M2I2ZTlk",
         },
       };
+      setLoading(true);
       // const response = await fetch(link, options);
       // let tiktokResult = await response.text();
-      tiktokResult = JSON.parse(tiktokResult);
-
-      const whisperResult = await makePostRequest("/api/whisper", tiktokResult);
+      //tiktokResult = JSON.parse(tiktokResult);
+      console.log("tr ", tiktokResult);
+      //const whisperResult = await makePostRequest("/api/whisper", tiktokResult);
+      const whisperResult =
+        "Here are the top 10 places to visit in Taiwan. Taipei 101, the iconic skyscraper in Taipei, is one of the tallest buildings in the world and offers stunning views of the city. The building also has the fastest elevator in the world, which can transport visitors from the 5th floor to the 89th floor in just 37 seconds. Taroko Gorge Located in the Taroko National Park, Taroko Gorge is a breathtaking natural wonder with towering cliffs, waterfalls, and marble formations. The largest lake in Taiwan, Sun Moon Lake, is a popular tourist destination for its scenic beauty, cycling routes, and hiking trails. It is a must-visit destination for anyone traveling to Taiwan, offering a unique and unforgettable experience for visitors of all ages. Jufen A charming town located in the mountains near Taipei, Jufen is famous for its narrow alleys, tea houses, and stunning ocean views. Kenting National Park Located at the southern tip of Taiwan, Kenting National Park is a popular beach destination with a wide variety of outdoor activities. Tainan The oldest city in Taiwan, Tainan is famous for its historical sites, temples, and traditional food. Yashin National Park Home to Taiwan's highest peak, Yashin National Park is a hiker's paradise with stunning mountain views and natural hot springs. Baitou Hot Springs Located just outside Taipei, Baitou is a popular hot spring destination known for its natural hot springs, spas, and beautiful scenery. Alishan A mountainous region in central Taiwan, Alishan is famous for its scenic railway, tea plantations, and stunning sunrises. Visitors can enjoy the natural beauty of the forest by taking a train ride through the mountains or by hiking along the many trails that wind through the forest. The Fo Guangshan Buddha Museum is a large Buddhist cultural complex located in the Daxiu district of Kyushu. The museum contains a vast collection of Buddhist art and artifacts, as well as numerous exhibits on Buddhist history, philosophy, and practice. Where do you want to visit next?";
       setTiktokData(tiktokResult);
       // console.log(whisperResult.output)
       setTextFromSpeech(whisperResult.output);
       // console.log(textFromSpeech)
+      console.log("whr ", whisperResult);
+      const text = whisperResult + tiktokResult.data.desc;
+      console.log("txt ", text);
 
-      const text = whisperResult.output + tiktokResult.data.desc;
       const locationResult = await makePostRequest("/api/openai_location", {
         data: text,
       });
 
       setLocations(locationResult.output.choices[0].message.content);
+      console.log("loc ", locations);
+      setLoading(false);
       // // to do next -> connect to serp api and find the coordinates and video ocr
-      push({ pathname: "/map", query: { location: locations } });
     } catch (error) {
       console.error(error);
     }
@@ -115,26 +207,53 @@ export default function Home() {
 
   useEffect(() => {
     if (locations === undefined || locations.length != 0) {
-      console.log(locations);
       // to do next -> connect to serp api and find the coordinates and video ocr
       push({ pathname: "/map", query: { location: locations } });
     }
   }, [locations]);
 
+  const continents = ["asia", "europe", "africa", "america"];
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setCount((prevIndex) => (prevIndex + 1) % continents.length);
+    }, 2500);
+
+    return () => clearInterval(intervalId); // Cleanup the interval on unmount
+  }, [continents]);
+
   return (
-    <div className="text-center mt-10">
-      <h1>find nice places</h1>
-      <p>drop tiktok travel link</p>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <input {...register("link", { required: true })} />
-        <input type="submit" />
-      </form>
-      <p className="py-4">{textFromSpeech}</p>
+    <div className="text-center mt-4">
+      {wc([37, 55])}
+      <div ref={mapContainer} className="map-container"></div>
+      {loading ? (
+        <p>
+          flying through{" "}
+          {wc([map.current.getCenter().lng, map.current.getCenter().lat])}{" "}
+          {continents[count]}
+          <Typewriter text="..." delay={650} infinite />
+        </p>
+      ) : (
+        <div>
+          <p>drop tiktok travel link</p>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <input
+              {...register("link", { required: true })}
+              className="input-box"
+            />
+            &nbsp;&nbsp;
+            {/* <br />
+        <br /> */}
+            <input type="submit" className="submit-box" />
+          </form>
+        </div>
+      )}
+      {/* <p className="py-4">{textFromSpeech}</p>
       <p className="py-4">
         caption: {tiktokData.data === null ? "null" : tiktokData.data.desc}
       </p>
       <p>locations:</p>
-      <p>{locations}</p>
+      <p>{locations}</p> */}
     </div>
   );
 }

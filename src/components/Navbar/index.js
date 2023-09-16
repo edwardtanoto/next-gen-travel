@@ -1,8 +1,7 @@
-import React from 'react';
-
+import React from "react";
 
 function Navbar(props) {
-  return <div>Navbar</div>;
+  return <div>/world.</div>;
 }
 
 export default Navbar;

@@ -1,4 +1,4 @@
-import serpOutput from "../../../dummyData/serpOutput.json";
+// import serpOutput from "../../../dummyData/serpOutput.json";
 const SerpApi = require("google-search-results-nodejs");
 const search = new SerpApi.GoogleSearch(process.env.SERP_API_KEY);
 
@@ -11,13 +11,15 @@ const params = {
 };
 
 const getSerpResult = (item) => {
+  console.log("iteml14 ", item);
   return new Promise((resolve) => {
-    search.json({ params, q: item }, resolve);
+    search.json({ params, q: item[0] + item[1] }, resolve);
   });
 };
 
 const getMultiSerpResult = async (locations) => {
-  console.log(locations);
+  console.log("locations ", locations);
+  locations = JSON.parse(locations.replace(/'/g, '"'));
   var serpResult = [];
   var promises = locations.map(async (item) => {
     console.log("item");
@@ -44,7 +46,7 @@ export default async function handler(req, res) {
       // console.log(serpOutput);
       console.log("Google");
       //   console.log(req.body);
-      //   const serpOutput = await getMultiSerpResult(req.body);
+      const serpOutput = await getMultiSerpResult(req.body);
       console.log("Google2");
       //   console.log(serpOutput);
       const serpToMapboxDetail = addMapboxDetail(serpOutput);

@@ -19,15 +19,19 @@ function Mapbox(props) {
   const [zoom, setZoom] = useState(7);
 
   useEffect(() => {
-    console.log(props.router.query.location);
+    console.log(
+      "mapbox props ",
+      `${JSON.parse(props.router.query.location.replace(/'/g, '"'))}`
+    );
     const fetchSerp = async () => {
       try {
         const serpResult = await makePostRequest(
-          "http://localhost:3000/api/serp",
-          props.router.query.location
+          "/api/serp",
+          `${props.router.query.location}`
         );
         console.log(serpResult);
         setSerpData(serpResult.result);
+        console.log("sd ", serpData);
         return serpResult.result;
       } catch (error) {
         console.error(error);
@@ -37,7 +41,7 @@ function Mapbox(props) {
     if (map.current) return; // initialize map only once
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/justinlee38/clmi4lefy01oj01qzaap372l4",
+      style: "mapbox://styles/edwardtanoto12/clmiz8upt01t401rdhiuq5qgf",
       center: [lng, lat],
       zoom: zoom,
     });
@@ -245,9 +249,7 @@ function Mapbox(props) {
   return (
     <div className={styles.mapbox}>
       <div className={styles.sidebar}>
-        <div className={styles.heading}>
-          <h1>Locations</h1>
-        </div>
+        <div className={styles.heading}>{/* <h1>{listings.length}</h1> */}</div>
         <div id="listings" className={styles.listings}></div>
       </div>
       <div ref={mapContainer} className={styles.map}></div>
