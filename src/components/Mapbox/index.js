@@ -4,7 +4,6 @@ import { withRouter } from "next/router";
 import mapboxgl from "mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
 import styles from "../../styles/mapbox.module.css";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { stores } from "./stores.js";
 import { makePostRequest } from "../../lib/api";
 
 //Mapbox API Token
@@ -15,7 +14,6 @@ function Mapbox(props) {
   const map = useRef(null);
   const [lng, setLng] = useState(-122.2679252);
   const [lat, setLat] = useState(37.5593266);
-  const [serpData, setSerpData] = useState({});
   const [zoom, setZoom] = useState(7);
 
   useEffect(() => {
@@ -49,32 +47,25 @@ function Mapbox(props) {
       setLat(map.current.getCenter().lat.toFixed(4));
       setZoom(map.current.getZoom().toFixed(2));
     });
+    map.current.on("load", () => {
+      /* Add the data to your map as a layer */
+      map.current.addSource("places", {
+        type: "geojson",
+        data: [],
+      });
+    });
 
     fetchSerp().then((serpResult) => {
-      console.log(serpResult.features);
       console.log(serpResult);
+      console.log(serpResult.features);
       serpResult.features.forEach(function (store, i) {
         store.properties.id = i;
       });
 
-      console.log(serpData);
-
-      map.current.on("load", () => {
-        /* Add the data to your map as a layer */
-        map.current.addSource("places", {
-          type: "geojson",
-          data: serpResult,
-        });
-        buildLocationList(serpResult);
-        addMarkers(serpResult);
-      });
+      buildLocationList(serpResult);
+      addMarkers(serpResult);
     });
-  }, [serpData]);
-
-  // useEffect(() => {
-  //   if (!map.current) return;
-
-  // }, [serpData]);
+  });
 
   function flyToStore(currentFeature) {
     map.current.flyTo({
