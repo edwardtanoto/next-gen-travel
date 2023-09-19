@@ -24,7 +24,7 @@ export default function Home() {
     if (map.current) return; // initialize map only once
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/edwardtanoto12/clmiz8upt01t401rdhiuq5qgf",
+      style: "mapbox://styles/justinlee38/clmpqt0v504qv01p70r70flq2",
       projection: "globe",
       center: [0, 0],
       zoom: 1.2,
@@ -191,7 +191,6 @@ export default function Home() {
       console.log("whr ", whisperResult);
       const text = whisperResult + tiktokResult.data.desc;
       console.log("txt ", text);
-
       const locationResult = await makePostRequest("/api/openai_location", {
         data: text,
       });
@@ -223,18 +222,16 @@ export default function Home() {
   }, [continents]);
 
   return (
-    <div className="text-center mt-4">
-      {wc([37, 55])}
+    <div className="text-center">
       <div ref={mapContainer} className="map-container"></div>
+      <div className="title">/world.</div>
       {loading ? (
         <p>
-          flying through{" "}
-          {wc([map.current.getCenter().lng, map.current.getCenter().lat])}{" "}
-          {continents[count]}
+          flying through {continents[count]}
           <Typewriter text="..." delay={650} infinite />
         </p>
       ) : (
-        <div>
+        <div className="form-group">
           <p>drop tiktok travel link</p>
           <form onSubmit={handleSubmit(onSubmit)}>
             <input
