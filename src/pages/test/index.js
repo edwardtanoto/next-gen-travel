@@ -2,7 +2,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { makePostRequest } from "../../lib/api";
 
-const test = () => {
+const Test = () => {
   const { push } = useRouter();
 
   const fetchSerp = async () => {
@@ -34,4 +34,4 @@ const test = () => {
   );
 };
 
-export default test;
+export default Test;

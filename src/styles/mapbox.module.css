@@ -99,21 +99,7 @@
   opacity: 1;
 }
 
-.sidebar ::-webkit-scrollbar {
-  width: 3px;
-  height: 3px;
-  border-left: 0;
-  background: rgba(0, 0, 0, 0.1);
-}
 
-.sidebar ::-webkit-scrollbar-track {
-  background: none;
-}
-
-.sidebar ::-webkit-scrollbar-thumb {
-  background: #ce4b5c;
-  border-radius: 0;
-}
 
 .marker {
   border: none;

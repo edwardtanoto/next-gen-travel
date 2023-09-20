@@ -4,15 +4,12 @@ import { makePostRequest } from "../lib/api";
 import { useRouter } from "next/navigation";
 import mapboxgl from "mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
 import "mapbox-gl/dist/mapbox-gl.css";
-import Typewriter from "../components/Typewriter";
-import wc from "which-country";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
 export default function Home() {
   const { push } = useRouter();
 
-  const [clipboardData, setClipboardData] = useState("");
   const [locations, setLocations] = useState([]);
   const [textFromSpeech, setTextFromSpeech] = useState("");
   const [count, setCount] = useState(0);
@@ -108,31 +105,14 @@ export default function Home() {
     fetchTiktok(link);
   };
 
-  // useEffect(() => {
-  //   const readClipboard = async () => {
-  //     if (!navigator.clipboard) {
-  //       // Clipboard API not available
-  //       return;
-  //     }
-
-  //     try {
-  //       navigator.clipboard
-  //         .readText()
-  //         .then(
-  //           (clipText) =>
-  //             (document.getElementById("outbox").innerText = clipText)
-  //         );
-  //     } catch (err) {
-  //       console.error("Failed to copy!", err);
-  //     }
-  //   };
-  // }, []);
   const regex = /(tiktok|Instagram)/i;
   function handleClipboard() {
     navigator.clipboard
       .readText()
       .then(async (clipboardItem) => {
-        setClipboardData(clipboardItem);
+        if (regex.test(clipboardItem)) {
+          document.querySelector(".input-box").value = clipboardItem;
+        }
       })
       .catch((error) => {
         console.error(error);
@@ -267,7 +247,9 @@ export default function Home() {
   }, [locations]);
 
   const continents = ["asia", "europe", "africa", "america"];
-
+  const handleInput = (e) => {
+    setLink(e.target.value);
+  };
   useEffect(() => {
     const intervalId = setInterval(() => {
       setCount((prevIndex) => (prevIndex + 1) % continents.length);
@@ -281,23 +263,13 @@ export default function Home() {
       <div ref={mapContainer} className="map-container"></div>
       <div className="title">/world.</div>
       {loading ? (
-        <p>
-          flying through {continents[count]}
-          <Typewriter text="..." delay={650} infinite />
-        </p>
+        ""
       ) : (
         <div className="form-group">
           <p>drop tiktok travel link</p>
           <form onSubmit={handleSubmit(onSubmit)}>
             <input
               {...register("link", { required: true })}
-              value={
-                clipboardData.length != 0
-                  ? regex.test(clipboardData)
-                    ? clipboardData
-                    : ""
-                  : ""
-              }
               className="input-box"
             />
             <div>
