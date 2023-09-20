@@ -15,6 +15,7 @@ function Mapbox(props) {
   const [lng, setLng] = useState(-122.2679252);
   const [lat, setLat] = useState(37.5593266);
   const [zoom, setZoom] = useState(7);
+  const [destinationLength, setDestinationLength] = useState(0);
 
   useEffect(() => {
     console.log(
@@ -27,7 +28,7 @@ function Mapbox(props) {
           "/api/serp",
           `${props.router.query.location}`
         );
-
+        console.log("sr length ", serpResult.result.length);
         return serpResult.result;
       } catch (error) {
         console.error(error);
@@ -58,6 +59,7 @@ function Mapbox(props) {
     fetchSerp().then((serpResult) => {
       console.log(serpResult);
       console.log(serpResult.features);
+      setDestinationLength(serpResult.features.length);
       serpResult.features.forEach(function (store, i) {
         store.properties.id = i;
       });
@@ -220,7 +222,9 @@ function Mapbox(props) {
   return (
     <div className={styles.mapbox}>
       <div className={styles.sidebar}>
-        <div className={styles.heading}>{/* <h1>{listings.length}</h1> */}</div>
+        <div className={styles.heading}>
+          <p>{destinationLength} destinations</p>
+        </div>
         <div id="listings" className={styles.listings}></div>
       </div>
       <div ref={mapContainer} className={styles.map}></div>

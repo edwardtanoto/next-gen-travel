@@ -6,7 +6,6 @@
   position: absolute;
   width: 30%;
   height: 100%;
-  top: 0;
   left: 0;
   overflow: hidden;
   border-radius: 0rem 2.75rem 2.75rem 0rem;
@@ -14,6 +13,7 @@
   background: rgba(255, 255, 255, 0.35);
   backdrop-filter: blur(13.600000381469727px);
   z-index: 2;
+  transition: ease-in 0.1s;
 }
 
 .map {
@@ -27,17 +27,24 @@
 }
 
 .heading {
-  background: #fff;
-  border-bottom: 1px solid #eee;
-  line-height: 60px;
+  font-family: 'DM Sans', sans-serif;;
+  text-align: center;
+  font-weight: bold;
+  padding-top: 4px;
+  height: 60px;
+  color: black;
 }
 
 .listings {
+  position: absolute;
   height: 100%;
+  width: 100%;
   overflow: auto;
+  margin-top: 8px;
   padding-bottom: 60px;
-  right: 0;
-  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .link {
   text-decoration: none;
@@ -172,3 +179,44 @@
   padding: 0;
   -webkit-font-smoothing: antialiased;
 }
+
+
+@media only screen and (max-width: 600px) {
+  .sidebar {
+    position: fixed;
+    width: 100%;
+    height: 60px;
+    bottom: 0;
+    overflow: auto;
+    border-radius: 16px 16px 0rem 0rem;
+    border: 1px solid #FFF;
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(13.600000381469727px);
+    z-index: 2;
+    transition: ease-in 0.2s;
+  }
+
+  .sidebar:hover{
+    position: fixed;
+    width: 100%;
+    height: 60%;
+    bottom: 0;
+    overflow: auto;
+    border-radius: 16px 16px 0rem 0rem;
+    border: 1px solid #FFF;
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(13.600000381469727px);
+    z-index: 2;
+  }
+  
+  .map {
+    z-index: 0;
+    position: absolute;
+    /* right: 25%; */
+    right: 0;
+    width: 100%;
+    top: 0;
+    bottom: 0;
+    transition: ease-in 0.2s;
+  }
+ }

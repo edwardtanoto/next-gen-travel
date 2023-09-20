@@ -12,6 +12,7 @@ mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 export default function Home() {
   const { push } = useRouter();
 
+  const [clipboardData, setClipboardData] = useState("");
   const [locations, setLocations] = useState([]);
   const [textFromSpeech, setTextFromSpeech] = useState("");
   const [count, setCount] = useState(0);
@@ -106,6 +107,60 @@ export default function Home() {
     )}`;
     fetchTiktok(link);
   };
+
+  // useEffect(() => {
+  //   const readClipboard = async () => {
+  //     if (!navigator.clipboard) {
+  //       // Clipboard API not available
+  //       return;
+  //     }
+
+  //     try {
+  //       navigator.clipboard
+  //         .readText()
+  //         .then(
+  //           (clipText) =>
+  //             (document.getElementById("outbox").innerText = clipText)
+  //         );
+  //     } catch (err) {
+  //       console.error("Failed to copy!", err);
+  //     }
+  //   };
+  // }, []);
+  const regex = /(tiktok|Instagram)/i;
+  function handleClipboard() {
+    navigator.clipboard
+      .readText()
+      .then(async (clipboardItem) => {
+        setClipboardData(clipboardItem);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    window.removeEventListener("focus", handleClipboard);
+  }
+
+  useEffect(() => {
+    if (!navigator.clipboard) {
+      setError({
+        message:
+          "Clipboard API not available. Please accept the permission request.",
+      });
+      return;
+    }
+
+    function handlePasteEvent(event) {
+      handleClipboard();
+      event.preventDefault();
+    }
+
+    document.addEventListener("paste", handlePasteEvent);
+    window.addEventListener("load", handlePasteEvent);
+    return () => {
+      document.removeEventListener("paste", handlePasteEvent);
+      window.addEventListener("load", handlePasteEvent);
+    };
+  }, []);
 
   const fetchTiktok = async (link) => {
     console.log("fetchTiktok ", link);
@@ -236,12 +291,21 @@ export default function Home() {
           <form onSubmit={handleSubmit(onSubmit)}>
             <input
               {...register("link", { required: true })}
+              value={
+                clipboardData.length != 0
+                  ? regex.test(clipboardData)
+                    ? clipboardData
+                    : ""
+                  : ""
+              }
               className="input-box"
             />
-            &nbsp;&nbsp;
+            <div>
+              <p id="outbox"></p>
+            </div>
             {/* <br />
         <br /> */}
-            <input type="submit" className="submit-box" />
+            <input type="submit" className="submit-box" id="outbox" />
           </form>
         </div>
       )}
