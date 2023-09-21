@@ -2,6 +2,7 @@
 const SerpApi = require("google-search-results-nodejs");
 const search = new SerpApi.GoogleSearch(process.env.SERP_API_KEY);
 const fs = require("fs");
+const client = require("./../../lib/db");
 const google_params = {
   q: "",
   location: "San Francisco, California, United States",
@@ -92,7 +93,7 @@ const addMapboxDetail = (data) => {
         title: "",
         type: "",
         description: "",
-        // emojiType: ,
+        emojiType: null,
         price: "",
         rating: "",
         reviewCount: "",
@@ -129,7 +130,7 @@ const addMapboxDetail = (data) => {
           description: item.google.knowledge_graph.description
             ? item.google.knowledge_graph.description
             : "",
-          // emojiType: ,
+          emojiType: null,
           price: item.google.knowledge_graph.price
             ? item.google.knowledge_graph.price
             : "",
@@ -190,7 +191,7 @@ const addMapboxDetail = (data) => {
           description: item.google.local_results.places[0].description
             ? item.google.local_results.places[0].description
             : "",
-          // emojiType: ,
+          emojiType: null,
           price: item.google.local_results.places[0].price
             ? item.google.local_results.places[0].price
             : "",
@@ -247,7 +248,7 @@ const addMapboxDetail = (data) => {
           description: item.gmaps.local_results[0].description
             ? item.gmaps.local_results[0].description
             : "",
-          // emojiType: ,
+          emojiType: null,
           price: item.gmaps.local_results[0].price
             ? item.gmaps.local_results[0].price
             : "",
@@ -306,7 +307,7 @@ const addMapboxDetail = (data) => {
           description: item.gmaps.place_results.description
             ? item.gmaps.place_results.description
             : "",
-          // emojiType: ,
+          emojiType: null,
           price: item.gmaps.place_results.price
             ? item.gmaps.place_results.price
             : "",
@@ -367,7 +368,7 @@ const addMapboxDetail = (data) => {
         title: place.properties.title,
         type: place.properties.type,
         description: place.properties.description,
-        // emojiType: ,
+        emojiType: place.properties.emojiType,
         price: place.properties.price,
         rating: place.properties.rating,
         reviewCount: place.properties.reviewCount,
@@ -378,11 +379,6 @@ const addMapboxDetail = (data) => {
         permanently_closed: place.properties.permanently_closed,
 
         externalLinks: {
-          // yelp: ,
-          // tripadvisor: ,
-          // uber: ,
-          // lyft: ,
-          // menu: ,
           website: place.properties.externalLinks.website,
           googlemap: place.properties.externalLinks.googlemap,
         },
@@ -391,6 +387,54 @@ const addMapboxDetail = (data) => {
     };
 
     geojsonFeatureCollectionObj.features.push(geojsonFeatureObj);
+    insert(async () => {
+      try {
+        const res = await client.query(`INSERT INTO Places (
+                longitude, 
+                latitude, 
+                title, 
+                type, 
+                description, 
+                emoji_type, 
+                price, 
+                rating, 
+                review_count, 
+                hours, 
+                phone, 
+                address, 
+                time_spend, 
+                permanently_closed, 
+                images, 
+                time_created
+            )
+            VALUES (
+                ${geojsonfeatureobj.gps_coordinates.longitude}, 
+                ${geojsonfeatureobj.gps_coordinates.latitude}, 
+                ${geojsonfeatureobj.properties.title}, 
+                ${geojsonfeatureobj.properties.type}, 
+                ${geojsonfeatureobj.properties.description}, 
+                ${geojsonfeatureobj.properties.emojiType},
+                ${geojsonfeatureobj.properties.price}, 
+                ${geojsonfeatureobj.properties.rating}, 
+                ${geojsonfeatureobj.properties.reviewCount}, 
+                ${geojsonfeatureobj.properties.hours}
+                ${geojsonfeatureobj.properties.phone}, 
+                ${geojsonfeatureobj.properties.address}, 
+                ${geojsonfeatureobj.properties.timeSpend}, 
+                ${geojsonfeatureobj.properties.permanently_closed}, 
+                ${geojsonfeatureobj.properties.images}
+            );`);
+        // res = await client.query(`DECLARE
+        //     new_place_id INTEGER;
+        // BEGIN
+        //     SELECT id INTO new_place_id FROM Places ORDER BY id DESC LIMIT 1;`);
+        console.log(res.rows[0].message); // Hello world!
+      } catch (err) {
+        console.error(err);
+      } finally {
+        await client.end();
+      }
+    });
   });
   //   console.log(tempListArr);
   console.log(
@@ -398,19 +442,5 @@ const addMapboxDetail = (data) => {
   );
 
   //   console.log(tempListArr);
-  return geojsonFeatureCollectionObj;
-};
-
-const addGeojsonDetail = (tempData) => {
-  console.log("in add geojson first line" + tempData.length);
-  var geojsonFeatureCollectionObj = {
-    type: "FeatureCollection",
-    features: [],
-  };
-
-  tempData.forEach((item, index) => {});
-  console.log("in geojson");
-  console.log(geojsonFeatureCollectionObj.length);
-
   return geojsonFeatureCollectionObj;
 };
