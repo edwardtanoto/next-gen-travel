@@ -3,6 +3,12 @@ const SerpApi = require("google-search-results-nodejs");
 const search = new SerpApi.GoogleSearch(process.env.SERP_API_KEY);
 const fs = require("fs");
 const client = require("./../../lib/db");
+const { Client } = require("pg");
+
+const client = new Client({
+  connectionString: "your_database_url",
+});
+
 const google_params = {
   q: "",
   location: "San Francisco, California, United States",

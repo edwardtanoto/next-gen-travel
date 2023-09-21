@@ -47,6 +47,7 @@ function Mapbox(props) {
       setLat(map.current.getCenter().lat.toFixed(4));
       setZoom(map.current.getZoom().toFixed(2));
     });
+
     map.current.on("load", () => {
       /* Add the data to your map as a layer */
       map.current.addSource("places", {
