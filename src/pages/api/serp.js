@@ -1,4 +1,5 @@
 import serpOutput from "../../../dummyData/serpOutput.json";
+
 const SerpApi = require("google-search-results-nodejs");
 const search = new SerpApi.GoogleSearch(process.env.SERP_API_KEY);
 const fs = require("fs");
@@ -60,7 +61,8 @@ export default async function handler(req, res) {
     try {
       console.log("Google");
       //   console.log(req.body);
-      //   const serpOutput = await getMultiSerpResult(req.body);
+
+      //const serpOutput = await getMultiSerpResult(req.body);
       console.log("Google2");
       fs.writeFileSync("serpOutput.txt", JSON.stringify(serpOutput, null, 4));
 

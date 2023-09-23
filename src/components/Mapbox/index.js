@@ -15,6 +15,7 @@ function Mapbox(props) {
   const [lng, setLng] = useState(-122.2679252);
   const [lat, setLat] = useState(37.5593266);
   const [zoom, setZoom] = useState(7);
+  const [destinationLength, setDestinationLength] = useState(0);
 
   useEffect(() => {
     console.log(
@@ -27,7 +28,7 @@ function Mapbox(props) {
           "/api/serp",
           `${props.router.query.location}`
         );
-
+        console.log("sr length ", serpResult.result.length);
         return serpResult.result;
       } catch (error) {
         console.error(error);
@@ -37,7 +38,7 @@ function Mapbox(props) {
     if (map.current) return; // initialize map only once
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/edwardtanoto12/clmiz8upt01t401rdhiuq5qgf",
+      style: "mapbox://styles/justinlee38/clmpqt0v504qv01p70r70flq2",
       center: [lng, lat],
       zoom: zoom,
     });
@@ -59,6 +60,7 @@ function Mapbox(props) {
     fetchSerp().then((serpResult) => {
       console.log(serpResult);
       console.log(serpResult.features);
+      setDestinationLength(serpResult.features.length);
       serpResult.features.forEach(function (store, i) {
         store.properties.id = i;
       });
@@ -104,6 +106,14 @@ function Mapbox(props) {
       listing.id = `listing-${store.properties.id}`;
       /* Assign the `item` class to each listing for styling. */
       listing.className = `${styles.item}`;
+      const imagebox = listing.appendChild(document.createElement("div"));
+
+      if (store.properties.externalLinks.googlemap) {
+        imagebox.innerHTML = `<img style="border-radius: 30px" src=\"${
+          store.properties.images[0] ? store.properties.images[0].original : ""
+        }" width=\"100%\" height=\"200px\">`;
+        imagebox.className = `${styles.imagebox}`;
+      }
 
       /* Add the link to the individual listing created above. */
       const link = listing.appendChild(document.createElement("a"));
@@ -114,48 +124,43 @@ function Mapbox(props) {
 
       /* Add details to the individual listing. */
       const details = listing.appendChild(document.createElement("div"));
+      details.className = `${styles.itemdetails}`;
       // details.innerHTML = `${store.properties.city} · `;
       if (store.properties.permanently_closed) {
         details.innerHTML += `<div>This place is permanently closed!!!</div>`;
       } else {
-        if (store.properties.externalLinks.googlemap) {
-          details.innerHTML = `<img src=\"${
-            store.properties.images[0]
-              ? store.properties.images[0].original
-              : ""
-          }" width=\"400px\" height=\"150px\">`;
-        }
-        if (store.properties.phone) {
-          details.innerHTML += `${store.properties.phone}`;
-        }
         if (store.properties.distance) {
           const roundedDistance =
             Math.round(store.properties.distance * 100) / 100;
           details.innerHTML += `<div><strong>${roundedDistance} miles away</strong></div>`;
         }
-        if (store.properties.type) {
-          details.innerHTML += `<div><strong>${store.properties.type}</strong></div>`;
+        if (store.properties.externalLinks.website) {
+          details.innerHTML += `<a style="text-decoration:none;" href=${store.properties.externalLinks.website}><img width="18px" height="18px" src="/logo/Globe.svg"/></a>&nbsp;`;
         }
+        if (store.properties.externalLinks.googlemap) {
+          details.innerHTML += `<a style="text-decoration:none" href=${store.properties.externalLinks.googlemap}><img width="18px" height="18px" src="/logo/Map.svg"/></a>`;
+        }
+        // if (store.properties.type) {
+        //   details.innerHTML += `<div>${store.properties.type}</div>`;
+        // }
         if (store.properties.description) {
-          details.innerHTML += `<div><strong>${store.properties.description}</strong></div>`;
+          details.innerHTML += `<div>${store.properties.description}</div>`;
         }
         if (store.properties.price) {
           details.innerHTML += `<div><strong>${store.properties.price}</strong></div>`;
         }
         if (store.properties.rating && store.properties.reviewCount) {
-          details.innerHTML += `<div><strong>${store.properties.rating} star (${store.properties.reviewCount})</strong></div>`;
+          details.innerHTML += `<div><strong>${store.properties.rating} ⭐️ (${store.properties.reviewCount})</strong></div>`;
         }
-        if (store.properties.address) {
-          details.innerHTML += `<div><strong>${store.properties.address}</strong></div>`;
-        }
+        // if (store.properties.address) {
+        //   details.innerHTML += `<div><strong>${store.properties.address}</strong></div>`;
+        // }
         if (store.properties.timeSpend) {
           details.innerHTML += `<div><strong>People normally spend ${store.properties.timeSpend}</strong></div>`;
         }
-        if (store.properties.externalLinks.website) {
-          details.innerHTML += `<div><a href=${store.properties.externalLinks.website}>website</a></div>`;
-        }
-        if (store.properties.externalLinks.googlemap) {
-          details.innerHTML += `<div><a href=${store.properties.externalLinks.googlemap}>Google Map</a></div>`;
+
+        if (store.properties.phone) {
+          details.innerHTML += `${store.properties.phone}`;
         }
       }
 
@@ -218,7 +223,9 @@ function Mapbox(props) {
   return (
     <div className={styles.mapbox}>
       <div className={styles.sidebar}>
-        <div className={styles.heading}>{/* <h1>{listings.length}</h1> */}</div>
+        <div className={styles.heading}>
+          <p>{destinationLength} destinations</p>
+        </div>
         <div id="listings" className={styles.listings}></div>
       </div>
       <div ref={mapContainer} className={styles.map}></div>

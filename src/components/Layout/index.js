@@ -7,7 +7,7 @@ function Layout(props) {
 
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
       {children}
       {/* <Footer /> */}
     </>

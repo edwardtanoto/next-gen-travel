@@ -4,8 +4,6 @@ import { makePostRequest } from "../lib/api";
 import { useRouter } from "next/navigation";
 import mapboxgl from "mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
 import "mapbox-gl/dist/mapbox-gl.css";
-import Typewriter from "../components/Typewriter";
-import wc from "which-country";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
@@ -24,7 +22,7 @@ export default function Home() {
     if (map.current) return; // initialize map only once
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/edwardtanoto12/clmiz8upt01t401rdhiuq5qgf",
+      style: "mapbox://styles/justinlee38/clmpqt0v504qv01p70r70flq2",
       projection: "globe",
       center: [0, 0],
       zoom: 1.2,
@@ -106,6 +104,43 @@ export default function Home() {
     )}`;
     fetchTiktok(link);
   };
+
+  const regex = /(tiktok|Instagram)/i;
+  function handleClipboard() {
+    navigator.clipboard
+      .readText()
+      .then(async (clipboardItem) => {
+        if (regex.test(clipboardItem)) {
+          document.querySelector(".input-box").value = clipboardItem;
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    window.removeEventListener("focus", handleClipboard);
+  }
+
+  useEffect(() => {
+    if (!navigator.clipboard) {
+      setError({
+        message:
+          "Clipboard API not available. Please accept the permission request.",
+      });
+      return;
+    }
+
+    function handlePasteEvent(event) {
+      handleClipboard();
+      event.preventDefault();
+    }
+
+    document.addEventListener("paste", handlePasteEvent);
+    window.addEventListener("load", handlePasteEvent);
+    return () => {
+      document.removeEventListener("paste", handlePasteEvent);
+      window.addEventListener("load", handlePasteEvent);
+    };
+  }, []);
 
   const fetchTiktok = async (link) => {
     console.log("fetchTiktok ", link);
@@ -191,7 +226,6 @@ export default function Home() {
       console.log("whr ", whisperResult);
       const text = whisperResult + tiktokResult.data.desc;
       console.log("txt ", text);
-
       const locationResult = await makePostRequest("/api/openai_location", {
         data: text,
       });
@@ -213,7 +247,9 @@ export default function Home() {
   }, [locations]);
 
   const continents = ["asia", "europe", "africa", "america"];
-
+  const handleInput = (e) => {
+    setLink(e.target.value);
+  };
   useEffect(() => {
     const intervalId = setInterval(() => {
       setCount((prevIndex) => (prevIndex + 1) % continents.length);
@@ -223,28 +259,25 @@ export default function Home() {
   }, [continents]);
 
   return (
-    <div className="text-center mt-4">
-      {wc([37, 55])}
+    <div className="text-center">
       <div ref={mapContainer} className="map-container"></div>
+      <div className="title">/world.</div>
       {loading ? (
-        <p>
-          flying through{" "}
-          {wc([map.current.getCenter().lng, map.current.getCenter().lat])}{" "}
-          {continents[count]}
-          <Typewriter text="..." delay={650} infinite />
-        </p>
+        ""
       ) : (
-        <div>
+        <div className="form-group">
           <p>drop tiktok travel link</p>
           <form onSubmit={handleSubmit(onSubmit)}>
             <input
               {...register("link", { required: true })}
               className="input-box"
             />
-            &nbsp;&nbsp;
+            <div>
+              <p id="outbox"></p>
+            </div>
             {/* <br />
         <br /> */}
-            <input type="submit" className="submit-box" />
+            <input type="submit" className="submit-box" id="outbox" />
           </form>
         </div>
       )}
