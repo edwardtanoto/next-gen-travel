@@ -1,13 +1,9 @@
-// import serpOutput from "../../../dummyData/serpOutput.json";
+import serpOutput from "../../../dummyData/serpOutput.json";
 const SerpApi = require("google-search-results-nodejs");
 const search = new SerpApi.GoogleSearch(process.env.SERP_API_KEY);
 const fs = require("fs");
-const client = require("./../../lib/db");
-const { Client } = require("pg");
-
-const client = new Client({
-  connectionString: "your_database_url",
-});
+const { sql } = require("@databases/pg");
+const db = require("./../../lib/db");
 
 const google_params = {
   q: "",
@@ -64,7 +60,7 @@ export default async function handler(req, res) {
     try {
       console.log("Google");
       //   console.log(req.body);
-      const serpOutput = await getMultiSerpResult(req.body);
+      //   const serpOutput = await getMultiSerpResult(req.body);
       console.log("Google2");
       fs.writeFileSync("serpOutput.txt", JSON.stringify(serpOutput, null, 4));
 
@@ -92,74 +88,75 @@ const addMapboxDetail = (data) => {
 
   var geojsonFeatureObj = {};
   data.forEach((item, index) => {
-    console.log(index);
     var place = {
       gps_coordinates: { longitude: 0, latitude: 0 },
       properties: {
-        title: "",
-        type: "",
-        description: "",
+        title: null,
+        type: null,
+        description: null,
         emojiType: null,
-        price: "",
-        rating: "",
-        reviewCount: "",
-        hours: "",
-        phone: "",
-        address: "",
-        timeSpend: "",
-        permanently_closed: "",
+        price: null,
+        rating: null,
+        reviewCount: null,
+        hours: null,
+        phone: null,
+        address: null,
+        timeSpend: null,
+        permanently_closed: null,
         externalLinks: {
-          website: "",
-          googlemap: "",
+          website: null,
+          googlemap: null,
         },
-        images: "",
+        images: null,
       },
     };
     geojsonFeatureObj = {};
+    console.log("goes after if statement");
+
     if (
       item.google.knowledge_graph &&
       item.google.knowledge_graph.local_map &&
       item.google.knowledge_graph.local_map.gps_coordinates &&
       item.google.knowledge_graph.local_map.gps_coordinates.longitude
     ) {
-      console.log("enter knowledge graph map");
+      console.log("enter knowledge graph map1");
 
       place = {
         gps_coordinates: item.google.knowledge_graph.local_map.gps_coordinates,
         properties: {
           title: item.google.knowledge_graph.title
             ? item.google.knowledge_graph.title
-            : "",
+            : null,
           type: item.google.knowledge_graph.type
             ? item.google.knowledge_graph.type
-            : "",
+            : null,
           description: item.google.knowledge_graph.description
             ? item.google.knowledge_graph.description
-            : "",
+            : null,
           emojiType: null,
           price: item.google.knowledge_graph.price
             ? item.google.knowledge_graph.price
-            : "",
+            : null,
           rating: item.google.knowledge_graph.rating
             ? item.google.knowledge_graph.rating
-            : "",
+            : null,
           reviewCount: item.google.knowledge_graph.review_count
             ? item.google.knowledge_graph.review_count
-            : "",
+            : null,
           hours: item.google.knowledge_graph.hours
             ? item.google.knowledge_graph.hours
-            : "",
+            : null,
           phone: item.google.knowledge_graph.phone
             ? item.google.knowledge_graph.phone
-            : "",
+            : null,
           address: item.google.knowledge_graph.address
             ? item.google.knowledge_graph.address
-            : "",
+            : null,
           timeSpend:
             item.google.knowledge_graph.popular_times &&
             item.google.knowledge_graph.popular_times.typical_time_spent
               ? item.google.knowledge_graph.popular_times.typical_time_spent
-              : "",
+              : null,
           permanently_closed: item.google.knowledge_graph.permanently_closed
             ? item.google.knowledge_graph.permanently_closed
             : false,
@@ -172,12 +169,12 @@ const addMapboxDetail = (data) => {
             // menu: ,
             website: item.google.knowledge_graph.website
               ? item.google.knowledge_graph.website
-              : "",
+              : null,
             googlemap: item.google.knowledge_graph.directions
               ? item.google.knowledge_graph.directions
-              : "",
+              : null,
           },
-          images: item.google.inline_images ? item.google.inline_images : "",
+          images: item.google.inline_images ? item.google.inline_images : null,
         },
       };
     } else if (
@@ -185,40 +182,42 @@ const addMapboxDetail = (data) => {
       item.google.local_results.places &&
       item.google.local_results.places[0]
     ) {
+      console.log("goes after if statement2");
+
       place = {
         gps_coordinates: item.google.local_results.places[0].gps_coordinates,
         properties: {
           title: item.google.local_results.places[0].title
             ? item.google.local_results.places[0].title
-            : "",
+            : null,
           type: item.google.local_results.places[0].type
             ? item.google.local_results.places[0].type
-            : "",
+            : null,
           description: item.google.local_results.places[0].description
             ? item.google.local_results.places[0].description
-            : "",
+            : null,
           emojiType: null,
           price: item.google.local_results.places[0].price
             ? item.google.local_results.places[0].price
-            : "",
+            : null,
           rating: item.google.local_results.places[0].rating
             ? item.google.local_results.places[0].rating
-            : "",
+            : null,
           reviewCount: item.google.local_results.places[0].reviews
             ? item.google.local_results.places[0].reviews
-            : "",
-          //hours: item.google.knowledge_graph.hours ? item.google.knowledge_graph.hours : "",
+            : null,
+          //hours: item.google.knowledge_graph.hours ? item.google.knowledge_graph.hours : null,
           phone: item.google.local_results.places[0].phone
             ? item.google.local_results.places[0].phone
-            : "",
+            : null,
           address: item.google.local_results.places[0].address
             ? item.google.local_results.places[0].address
-            : "",
+            : null,
           //   timeSpend:
           //     item.google.knowledge_graph.popular_times &&
           //     item.google.knowledge_graph.popular_times.typical_time_spent
           //       ? item.google.knowledge_graph.popular_times.typical_time_spent
-          //       : "",
+          //       : null,
           //   permanently_closed: item.google.knowledge_graph.permanently_closed
           //     ? item.google.knowledge_graph.permanently_closed
           //     : false,
@@ -231,53 +230,55 @@ const addMapboxDetail = (data) => {
             // menu: ,
             // website: item.google.knowledge_graph.website
             //   ? item.google.knowledge_graph.website
-            //   : "",
+            //   : null,
             // googlemap: item.google.knowledge_graph.directions
             //   ? item.google.knowledge_graph.directions
-            //   : "",
+            //   : null,
           },
           images: item.google.local_results.places[0].thumbnail
             ? item.google.local_results.places[0].thumbnail
-            : "",
+            : null,
         },
       };
     } else if (item.gmaps.local_results && item.gmaps.local_results[0]) {
+      console.log("goes after if statement3");
+
       place = {
         gps_coordinates: item.gmaps.local_results[0].gps_coordinates,
         properties: {
           title: item.gmaps.local_results[0].title
             ? item.gmaps.local_results[0].title
-            : "",
+            : null,
           type: item.gmaps.local_results[0].type
             ? item.gmaps.local_results[0].type
-            : "",
+            : null,
           description: item.gmaps.local_results[0].description
             ? item.gmaps.local_results[0].description
-            : "",
+            : null,
           emojiType: null,
           price: item.gmaps.local_results[0].price
             ? item.gmaps.local_results[0].price
-            : "",
+            : null,
           rating: item.gmaps.local_results[0].rating
             ? item.gmaps.local_results[0].rating
-            : "",
+            : null,
           reviewCount: item.gmaps.local_results[0].reviews
             ? item.gmaps.local_results[0].reviews
-            : "",
+            : null,
           hours: item.gmaps.local_results[0].operating_hours
             ? item.gmaps.local_results[0].operating_hours
-            : "",
+            : null,
           phone: item.gmaps.local_results[0].phone
             ? item.gmaps.local_results[0].phone
-            : "",
+            : null,
           address: item.gmaps.local_results[0].address
             ? item.gmaps.local_results[0].address
-            : "",
+            : null,
           //   timeSpend:
           //     item.gmaps.knowledge_graph.popular_times &&
           //     item.gmaps.knowledge_graph.popular_times.typical_time_spent
           //       ? item.gmaps.knowledge_graph.popular_times.typical_time_spent
-          //       : "",
+          //       : null,
           //   permanently_closed: item.gmaps.knowledge_graph.permanently_closed
           //     ? item.gmaps.knowledge_graph.permanently_closed
           //     : false,
@@ -290,53 +291,55 @@ const addMapboxDetail = (data) => {
             // menu: ,
             website: item.gmaps.local_results[0].website
               ? item.gmaps.local_results[0].website
-              : "",
+              : null,
             googlemap: item.gmaps.local_results[0].directions
               ? item.gmaps.local_results[0].directions
-              : "",
+              : null,
           },
           images: item.gmaps.local_results[0].thumbnail
             ? item.gmaps.local_results[0].thumbnail
-            : "",
+            : null,
         },
       };
     } else if (item.gmaps.place_results) {
+      console.log("goes after if statement4");
+
       place = {
         gps_coordinates: item.gmaps.place_results.gps_coordinates,
         properties: {
           title: item.gmaps.place_results.title
             ? item.gmaps.place_results.title
-            : "",
+            : null,
           type: item.gmaps.place_results.type
             ? item.gmaps.place_results.type
-            : "",
+            : null,
           description: item.gmaps.place_results.description
             ? item.gmaps.place_results.description
-            : "",
+            : null,
           emojiType: null,
           price: item.gmaps.place_results.price
             ? item.gmaps.place_results.price
-            : "",
+            : null,
           rating: item.gmaps.place_results.rating
             ? item.gmaps.place_results.rating
-            : "",
+            : null,
           reviewCount: item.gmaps.place_results.reviews
             ? item.gmaps.place_results.reviews
-            : "",
+            : null,
           hours: item.gmaps.place_results.operating_hours
             ? item.gmaps.place_results.operating_hours
-            : "",
+            : null,
           phone: item.gmaps.place_results.phone
             ? item.gmaps.place_results.phone
-            : "",
+            : null,
           address: item.gmaps.place_results.address
             ? item.gmaps.place_results.address
-            : "",
+            : null,
           //   timeSpend:
           //     item.gmaps.knowledge_graph.popular_times &&
           //     item.gmaps.knowledge_graph.popular_times.typical_time_spent
           //       ? item.gmaps.knowledge_graph.popular_times.typical_time_spent
-          //       : "",
+          //       : null,
           //   permanently_closed: item.gmaps.knowledge_graph.permanently_closed
           //     ? item.gmaps.knowledge_graph.permanently_closed
           //     : false,
@@ -349,14 +352,14 @@ const addMapboxDetail = (data) => {
             // menu: ,
             website: item.gmaps.place_results.website
               ? item.gmaps.place_results.website
-              : "",
+              : null,
             googlemap: item.gmaps.place_results.directions
               ? item.gmaps.place_results.directions
-              : "",
+              : null,
           },
           images: item.gmaps.place_results.thumbnail
             ? item.gmaps.place_results.thumbnail
-            : "",
+            : null,
         },
       };
     }
@@ -393,53 +396,10 @@ const addMapboxDetail = (data) => {
     };
 
     geojsonFeatureCollectionObj.features.push(geojsonFeatureObj);
-    insert(async () => {
-      try {
-        const res = await client.query(`INSERT INTO Places (
-                longitude, 
-                latitude, 
-                title, 
-                type, 
-                description, 
-                emoji_type, 
-                price, 
-                rating, 
-                review_count, 
-                hours, 
-                phone, 
-                address, 
-                time_spend, 
-                permanently_closed, 
-                images, 
-                time_created
-            )
-            VALUES (
-                ${geojsonfeatureobj.gps_coordinates.longitude}, 
-                ${geojsonfeatureobj.gps_coordinates.latitude}, 
-                ${geojsonfeatureobj.properties.title}, 
-                ${geojsonfeatureobj.properties.type}, 
-                ${geojsonfeatureobj.properties.description}, 
-                ${geojsonfeatureobj.properties.emojiType},
-                ${geojsonfeatureobj.properties.price}, 
-                ${geojsonfeatureobj.properties.rating}, 
-                ${geojsonfeatureobj.properties.reviewCount}, 
-                ${geojsonfeatureobj.properties.hours}
-                ${geojsonfeatureobj.properties.phone}, 
-                ${geojsonfeatureobj.properties.address}, 
-                ${geojsonfeatureobj.properties.timeSpend}, 
-                ${geojsonfeatureobj.properties.permanently_closed}, 
-                ${geojsonfeatureobj.properties.images}
-            );`);
-        // res = await client.query(`DECLARE
-        //     new_place_id INTEGER;
-        // BEGIN
-        //     SELECT id INTO new_place_id FROM Places ORDER BY id DESC LIMIT 1;`);
-        console.log(res.rows[0].message); // Hello world!
-      } catch (err) {
-        console.error(err);
-      } finally {
-        await client.end();
-      }
+
+    insertPlace(db, geojsonFeatureObj).catch((err) => {
+      console.error(err);
+      process.exit(1);
     });
   });
   //   console.log(tempListArr);
@@ -450,3 +410,62 @@ const addMapboxDetail = (data) => {
   //   console.log(tempListArr);
   return geojsonFeatureCollectionObj;
 };
+
+async function insertPlace(db, geojsonFeatureObj) {
+  const placeResult = await db.query(
+    sql`
+    INSERT INTO places (
+      longitude, 
+      latitude, 
+      title, 
+      type, 
+      description, 
+      price, 
+      rating, 
+      review_count, 
+      phone, 
+      address, 
+      time_spend, 
+      permanently_closed, 
+      time_created
+    ) 
+    VALUES (
+      ${geojsonFeatureObj.geometry.coordinates[1]}, 
+      ${geojsonFeatureObj.geometry.coordinates[0]}, 
+      ${geojsonFeatureObj.properties.title}, 
+      ${geojsonFeatureObj.properties.type}, 
+      ${geojsonFeatureObj.properties.description}, 
+      ${geojsonFeatureObj.properties.price}, 
+      ${geojsonFeatureObj.properties.rating}, 
+      ${geojsonFeatureObj.properties.reviewCount}, 
+      ${geojsonFeatureObj.properties.phone}, 
+      ${geojsonFeatureObj.properties.address}, 
+      ${null},
+      ${null}, 
+      NOW()) 
+    RETURNING id
+    `
+  );
+  //geojsonFeatureObj.properties.timeSpend
+  //geojsonFeatureObj.properties.permanently_closed
+  //   const placeId = placeResult.rows[0].id;
+
+  //   await db.query(
+  //     `
+  //         INSERT INTO externallinks (
+  //           place_id,
+  //           website,
+  //           googlemap,
+  //           time_created
+  //         )
+  //         VALUES ($1, $2, $3, NOW())
+  //         `,
+  //     [
+  //       placeId,
+  //       geojsonFeatureObj.properties.externalLinks.website, // replace with actual value
+  //       geojsonFeatureObj.properties.externalLinks.googlemap, // replace with actual value
+  //     ]
+  //   );
+
+  await db.dispose();
+}
