@@ -1,88 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,200;9..40,400;9..40,600&family=Oxygen+Mono&display=swap');
+
 /* The page is split between map and sidebar - the sidebar gets 1/3, map
   gets 2/3 of the page. You can adjust this to your personal liking. */
 .sidebar {
   position: absolute;
-  width: 33.3333%;
+  width: 30%;
   height: 100%;
-  top: 0;
   left: 0;
   overflow: hidden;
-  border-right: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 0rem 2.75rem 2.75rem 0rem;
+  border: 1px solid #FFF;
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(13.600000381469727px);
+  z-index: 2;
+  transition: ease-in 0.1s;
 }
 
 .map {
+  z-index: 0;
   position: absolute;
-  left: 33.3333%;
-  width: 66.6666%;
+  /* right: 25%; */
+  right: 0;
+  width: 100%;
   top: 0;
   bottom: 0;
 }
 
 .heading {
-  background: #fff;
-  border-bottom: 1px solid #eee;
+  font-family: 'DM Sans', sans-serif;;
+  text-align: center;
+  font-weight: bold;
+  padding-top: 4px;
   height: 60px;
-  line-height: 60px;
-  padding: 0 10px;
+  color: black;
 }
 
 .listings {
+  position: absolute;
   height: 100%;
+  width: 100%;
   overflow: auto;
+  margin-top: 8px;
   padding-bottom: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-
+.link {
+  text-decoration: none;
+}
 .listings .item {
   border-bottom: 1px solid #eee;
-  padding: 10px;
+  margin-bottom: 40px;
   text-decoration: none;
+  width: 350px;
+  background-color: white;
+  border-radius: 30px;
+  font-family: 'DM Sans', sans-serif;;
+  font-weight: lighter;
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+.itemdetails {
+  padding: 20px;
 }
 
 .listings .item:last-child {
   border-bottom: none;
+  margin-bottom: 120px;
 }
 
 .listings .item .title {
   display: block;
-  color: #00853e;
-  font-weight: 700;
+  color: black;
+  font-family: 'DM Sans', sans-serif;;
+  font-weight: bold;
+}
+
+.title {
+  padding-left: 20px;
+  padding-top: 20px;
+  text-decoration: none;
 }
 
 .listings .item .title small {
-  font-weight: 400;
+  font-weight: 600;
 }
 
 .listings .item.active .title,
 .listings .item .title:hover {
-  color: #8cc63f;
+  color: black;
+  opacity: 1;
 }
 
 .listings .item.active {
-  background-color: #f8f8f8;
+  background-color: white;
+  opacity: 1;
 }
 
-.sidebar ::-webkit-scrollbar {
-  width: 3px;
-  height: 3px;
-  border-left: 0;
-  background: rgba(0, 0, 0, 0.1);
-}
 
-.sidebar ::-webkit-scrollbar-track {
-  background: none;
-}
-
-.sidebar ::-webkit-scrollbar-thumb {
-  background: #00853e;
-  border-radius: 0;
-}
 
 .marker {
   border: none;
   cursor: pointer;
   height: 56px;
   width: 56px;
-  background-image: url(marker.png);
+  background-image: url(marker2.png);
 }
 
 /* Marker tweaks */
@@ -108,6 +132,14 @@
   margin-top: -15px;
 }
 
+.imagebox {
+  border-radius: 2.75rem;
+  width: 100%;
+  height: 200px;
+  margin: 0;
+  object-fit: contain;
+
+}
 .mapboxgl-popup-content h4 {
   margin: 0;
   padding: 10px;
@@ -133,3 +165,45 @@
   padding: 0;
   -webkit-font-smoothing: antialiased;
 }
+
+
+@media only screen and (max-width: 600px) {
+  .sidebar {
+    position: fixed;
+    width: 100%;
+    height: 60px;
+    bottom: 0;
+    overflow: auto;
+    border-radius: 16px 16px 0rem 0rem;
+    border: 1px solid #FFF;
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(13.600000381469727px);
+    z-index: 2;
+    transition: ease-in 0.2s;
+  }
+
+  .sidebar:hover{
+    position: fixed;
+    width: 100%;
+    height: 60%;
+    bottom: 0;
+    overflow: auto;
+    border-radius: 16px 16px 0rem 0rem;
+    border: 1px solid #FFF;
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(13.600000381469727px);
+    z-index: 2;
+  }
+  
+  .map {
+    z-index: 0;
+    position: absolute;
+    /* right: 25%; */
+    right: 0;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    bottom: 0;
+    transition: ease-in 0.2s;
+  }
+ }

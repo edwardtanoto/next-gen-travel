@@ -4,7 +4,6 @@ import { withRouter } from "next/router";
 import mapboxgl from "mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
 import styles from "../../styles/mapbox.module.css";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { stores } from "./stores.js";
 import { makePostRequest } from "../../lib/api";
 
 //Mapbox API Token
@@ -15,19 +14,21 @@ function Mapbox(props) {
   const map = useRef(null);
   const [lng, setLng] = useState(-122.2679252);
   const [lat, setLat] = useState(37.5593266);
-  const [serpData, setSerpData] = useState();
   const [zoom, setZoom] = useState(7);
+  const [destinationLength, setDestinationLength] = useState(0);
 
   useEffect(() => {
-    console.log(props.router.query.location);
+    console.log(
+      "mapbox props ",
+      `${JSON.parse(props.router.query.location.replace(/'/g, '"'))}`
+    );
     const fetchSerp = async () => {
       try {
         const serpResult = await makePostRequest(
-          "http://localhost:3001/api/serp",
-          props.router.query.location
+          "/api/serp",
+          `${props.router.query.location}`
         );
-        console.log(serpResult);
-        setSerpData(serpResult.result);
+        console.log("sr length ", serpResult.result.length);
         return serpResult.result;
       } catch (error) {
         console.error(error);
@@ -37,7 +38,7 @@ function Mapbox(props) {
     if (map.current) return; // initialize map only once
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/mapbox/streets-v12",
+      style: "mapbox://styles/justinlee38/clmpqt0v504qv01p70r70flq2",
       center: [lng, lat],
       zoom: zoom,
     });
@@ -48,51 +49,25 @@ function Mapbox(props) {
       setZoom(map.current.getZoom().toFixed(2));
     });
 
+    map.current.on("load", () => {
+      /* Add the data to your map as a layer */
+      map.current.addSource("places", {
+        type: "geojson",
+        data: [],
+      });
+    });
+
     fetchSerp().then((serpResult) => {
+      console.log(serpResult);
       console.log(serpResult.features);
+      setDestinationLength(serpResult.features.length);
       serpResult.features.forEach(function (store, i) {
         store.properties.id = i;
       });
 
-      map.current.on("load", () => {
-        /* Add the data to your map as a layer */
-        map.current.addSource("places", {
-          type: "geojson",
-          data: serpResult,
-        });
-
-        buildLocationList(serpResult);
-        addMarkers(serpResult);
-      });
+      buildLocationList(serpResult);
+      addMarkers(serpResult);
     });
-
-    // map.current.on("click", (event: any) => {
-    //   /* Determine if a feature in the "locations" layer exists at that point. */
-    //   const features = map.current.queryRenderedFeatures(event.point, {
-    //     layers: ["locations"],
-    //   });
-
-    //   /* If it does not exist, return */
-    //   if (!features.length) return;
-
-    //   const clickedPoint = features[0];
-
-    //   /* Fly to the point */
-    //   flyToStore(clickedPoint);
-
-    //   /* Close all other popups and display popup for clicked store */
-    //   createPopUp(clickedPoint);
-
-    //   /* Highlight listing in sidebar (and remove highlight for all other listings) */
-    //   const activeItem = document.getElementsByClassName(`${styles.active}`);
-    //   if (activeItem[0]) {
-    //     activeItem[0].classList.remove(`${styles.active}`);
-    //   }
-    //   const listing = document.getElementById(
-    //     `listing-${clickedPoint.properties.id}`
-    //   );
-    //   listing.classList.add(`${styles.active}`);
-    // });
   });
 
   function flyToStore(currentFeature) {
@@ -131,6 +106,14 @@ function Mapbox(props) {
       listing.id = `listing-${store.properties.id}`;
       /* Assign the `item` class to each listing for styling. */
       listing.className = `${styles.item}`;
+      const imagebox = listing.appendChild(document.createElement("div"));
+
+      if (store.properties.externalLinks.googlemap) {
+        imagebox.innerHTML = `<img style="border-radius: 30px" src=\"${
+          store.properties.images[0] ? store.properties.images[0].original : ""
+        }" width=\"100%\" height=\"200px\">`;
+        imagebox.className = `${styles.imagebox}`;
+      }
 
       /* Add the link to the individual listing created above. */
       const link = listing.appendChild(document.createElement("a"));
@@ -141,17 +124,47 @@ function Mapbox(props) {
 
       /* Add details to the individual listing. */
       const details = listing.appendChild(document.createElement("div"));
+      details.className = `${styles.itemdetails}`;
       // details.innerHTML = `${store.properties.city} · `;
-      if (store.properties.phone) {
-        details.innerHTML += `${store.properties.phoneFormatted}`;
-      }
-      if (store.properties.distance) {
-        const roundedDistance =
-          Math.round(store.properties.distance * 100) / 100;
-        details.innerHTML += `<div><strong>${roundedDistance} miles away</strong></div>`;
+      if (store.properties.permanently_closed) {
+        details.innerHTML += `<div>This place is permanently closed!!!</div>`;
+      } else {
+        if (store.properties.distance) {
+          const roundedDistance =
+            Math.round(store.properties.distance * 100) / 100;
+          details.innerHTML += `<div><strong>${roundedDistance} miles away</strong></div>`;
+        }
+        if (store.properties.externalLinks.website) {
+          details.innerHTML += `<a style="text-decoration:none;" href=${store.properties.externalLinks.website}><img width="18px" height="18px" src="/logo/Globe.svg"/></a>&nbsp;`;
+        }
+        if (store.properties.externalLinks.googlemap) {
+          details.innerHTML += `<a style="text-decoration:none" href=${store.properties.externalLinks.googlemap}><img width="18px" height="18px" src="/logo/Map.svg"/></a>`;
+        }
+        // if (store.properties.type) {
+        //   details.innerHTML += `<div>${store.properties.type}</div>`;
+        // }
+        if (store.properties.description) {
+          details.innerHTML += `<div>${store.properties.description}</div>`;
+        }
+        if (store.properties.price) {
+          details.innerHTML += `<div><strong>${store.properties.price}</strong></div>`;
+        }
+        if (store.properties.rating && store.properties.reviewCount) {
+          details.innerHTML += `<div><strong>${store.properties.rating} ⭐️ (${store.properties.reviewCount})</strong></div>`;
+        }
+        // if (store.properties.address) {
+        //   details.innerHTML += `<div><strong>${store.properties.address}</strong></div>`;
+        // }
+        if (store.properties.timeSpend) {
+          details.innerHTML += `<div><strong>People normally spend ${store.properties.timeSpend}</strong></div>`;
+        }
+
+        if (store.properties.phone) {
+          details.innerHTML += `${store.properties.phone}`;
+        }
       }
 
-      link.addEventListener("click", function () {
+      link.addEventListener("mouseover", function () {
         for (const feature of stores.features) {
           if (this.id === `link-${feature.properties.id}`) {
             flyToStore(feature);
@@ -175,6 +188,10 @@ function Mapbox(props) {
       /* Assign a unique `id` to the marker. */
       el.id = `marker-${marker.properties.id}`;
       /* Assign the `marker` class to each marker for styling. */
+      el.innerHTML += `🍽️`;
+      el.style.cssText =
+        "text-indent:17.5px;font-size: 20px;line-height: 35px;";
+
       el.className = `${styles.marker}`;
 
       el.addEventListener("click", (e) => {
@@ -207,7 +224,7 @@ function Mapbox(props) {
     <div className={styles.mapbox}>
       <div className={styles.sidebar}>
         <div className={styles.heading}>
-          <h1>Our locations</h1>
+          <p>{destinationLength} destinations</p>
         </div>
         <div id="listings" className={styles.listings}></div>
       </div>

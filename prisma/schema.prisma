@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Place {
+  id                 Int            @id @default(autoincrement())
+  longitude          Float
+  latitude           Float
+  title              String
+  type               String
+  description        String?
+  price              Float?
+  rating             Float?
+  reviewCount        Int?
+  hours              BusinessHours?
+  phone              String?
+  address            String?
+  timeSpend          String?
+  permanently_closed Boolean?
+  externalLinks      ExternalLinks?
+  images             Json?
+  hoursId            Int?
+}
+
+model ExternalLinks {
+  id        Int     @id @default(autoincrement())
+  placeId   Int     @unique
+  place     Place   @relation(fields: [placeId], references: [id])
+  website   String?
+  googlemap String?
+}
+
+model BusinessHours {
+  id         Int       @id @default(autoincrement())
+  placeId    Int
+  place      Place     @relation(fields: [placeId], references: [id])
+  monday     DayHours? @relation(name: "HoursMonday", fields: [dayHoursId], references: [id])
+  tuesday    DayHours? @relation(name: "HoursTuesday", fields: [dayHoursId], references: [id])
+  wednesday  DayHours? @relation(name: "HoursWednesday", fields: [dayHoursId], references: [id])
+  thursday   DayHours? @relation(name: "HoursThursday", fields: [dayHoursId], references: [id])
+  friday     DayHours? @relation(name: "HoursFriday", fields: [dayHoursId], references: [id])
+  saturday   DayHours? @relation(name: "HoursSaturday", fields: [dayHoursId], references: [id])
+  sunday     DayHours? @relation(name: "HoursSunday", fields: [dayHoursId], references: [id])
+  dayHoursId Int?
+  dayHoursId Int?
+  dayHoursId Int?
+  dayHoursId Int?
+  dayHoursId Int?
+  dayHoursId Int?
+  dayHoursId Int?
+}
+
+model DayHours {
+  id            Int             @id @default(autoincrement())
+  opens         String
+  closes        String
+  BusinessHours BusinessHours[]
+  BusinessHours BusinessHours[]
+  BusinessHours BusinessHours[]
+  BusinessHours BusinessHours[]
+  BusinessHours BusinessHours[]
+  BusinessHours BusinessHours[]
+  BusinessHours BusinessHours[]
+}
