@@ -8,7 +8,7 @@ const Test = () => {
   const fetchSerp = async () => {
     try {
       const serpResult = await makePostRequest(
-        "/api/serp_gmaps",
+        `${process.env.URL}/api/awsOcr`,
         "Taipei 101 Taiwan"
       );
 
@@ -22,12 +22,12 @@ const Test = () => {
 
   return (
     <span
-      onClick={function () {
-        push({
-          pathname: "/map",
-          query: { location: ["Curry Hyuga, Burlingame", "Midway SF"] },
-        });
-      }}
+    // onClick={function () {
+    //   push({
+    //     pathname: "/map",
+    //     query: { location: ["Curry Hyuga, Burlingame", "Midway SF"] },
+    //   });
+    // }}
     >
       here
     </span>

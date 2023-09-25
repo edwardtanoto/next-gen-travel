@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@databases/pg": "^5.4.1",
+    "aws-sdk": "^2.1463.0",
     "cloudinary": "^1.40.0",
     "fs": "^0.0.1-security",
     "google-search-results-nodejs": "^2.1.0",

@@ -4,7 +4,7 @@ const SerpApi = require("google-search-results-nodejs");
 const search = new SerpApi.GoogleSearch(process.env.SERP_API_KEY);
 const fs = require("fs");
 const { sql } = require("@databases/pg");
-const db = require("./../../lib/db");
+const { db, insertPlace } = require("./../../lib/db");
 
 const google_params = {
   q: "",
@@ -404,7 +404,6 @@ const addMapboxDetail = (data) => {
       process.exit(1);
     });
   });
-  //   console.log(tempListArr);
   console.log(
     "in tempList last line" + geojsonFeatureCollectionObj.features.length
   );
@@ -412,62 +411,3 @@ const addMapboxDetail = (data) => {
   //   console.log(tempListArr);
   return geojsonFeatureCollectionObj;
 };
-
-async function insertPlace(db, geojsonFeatureObj) {
-  const placeResult = await db.query(
-    sql`
-    INSERT INTO places (
-      longitude, 
-      latitude, 
-      title, 
-      type, 
-      description, 
-      price, 
-      rating, 
-      review_count, 
-      phone, 
-      address, 
-      time_spend, 
-      permanently_closed, 
-      time_created
-    ) 
-    VALUES (
-      ${geojsonFeatureObj.geometry.coordinates[1]}, 
-      ${geojsonFeatureObj.geometry.coordinates[0]}, 
-      ${geojsonFeatureObj.properties.title}, 
-      ${geojsonFeatureObj.properties.type}, 
-      ${geojsonFeatureObj.properties.description}, 
-      ${geojsonFeatureObj.properties.price}, 
-      ${geojsonFeatureObj.properties.rating}, 
-      ${geojsonFeatureObj.properties.reviewCount}, 
-      ${geojsonFeatureObj.properties.phone}, 
-      ${geojsonFeatureObj.properties.address}, 
-      ${null},
-      ${null}, 
-      NOW()) 
-    RETURNING id
-    `
-  );
-  //geojsonFeatureObj.properties.timeSpend
-  //geojsonFeatureObj.properties.permanently_closed
-  //   const placeId = placeResult.rows[0].id;
-
-  //   await db.query(
-  //     `
-  //         INSERT INTO externallinks (
-  //           place_id,
-  //           website,
-  //           googlemap,
-  //           time_created
-  //         )
-  //         VALUES ($1, $2, $3, NOW())
-  //         `,
-  //     [
-  //       placeId,
-  //       geojsonFeatureObj.properties.externalLinks.website, // replace with actual value
-  //       geojsonFeatureObj.properties.externalLinks.googlemap, // replace with actual value
-  //     ]
-  //   );
-
-  await db.dispose();
-}
