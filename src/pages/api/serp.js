@@ -399,10 +399,10 @@ const addMapboxDetail = (data) => {
 
     geojsonFeatureCollectionObj.features.push(geojsonFeatureObj);
 
-    insertPlace(db, geojsonFeatureObj).catch((err) => {
-      console.error(err);
-      process.exit(1);
-    });
+    // insertPlace(db, geojsonFeatureObj).catch((err) => {
+    //   console.error(err);
+    //   process.exit(1);
+    // });
   });
   //   console.log(tempListArr);
   console.log(
