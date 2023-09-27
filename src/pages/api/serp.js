@@ -69,10 +69,9 @@ export default async function handler(req, res) {
 
       console.log(serpOutput.length);
       console.log(serpOutput);
-      const result = addMapboxDetail(serpOutput);
+      const result = await addMapboxDetail(serpOutput);
       console.log(result.features);
       console.log("send details to local " + result.features.length);
-
       res.status(200).json({ result });
     } catch (err) {
       res.status(500).json({ error: "failed to load data" });
@@ -81,7 +80,18 @@ export default async function handler(req, res) {
   }
 }
 
-const addMapboxDetail = (data) => {
+const matchEmoji = async (title, desc) => {
+  const emojiResult = await makePostRequest(
+    `${process.env.URL}/api/openai_emoji`,
+    {
+      data: title + " " + desc,
+    }
+  );
+  console.log(emojiResult.output.choices[0].message.content);
+  return emojiResult.output.choices[0].message.content;
+};
+
+const addMapboxDetail = async (data) => {
   // the callback. Use a better name
   console.log("test in add mapbox detail first line " + data.length);
 
@@ -89,17 +99,6 @@ const addMapboxDetail = (data) => {
   var geojsonFeatureCollectionObj = {
     type: "FeatureCollection",
     features: [],
-  };
-
-  const matchEmoji = async (title, desc) => {
-    const emojiResult = await makePostRequest(
-      "http://localhost:3000/api/openai_emoji",
-      {
-        data: title + " " + desc,
-      }
-    );
-    console.log(emojiResult.output.choices[0].message.content);
-    return emojiResult.output.choices[0].message.content;
   };
 
   var geojsonFeatureObj = {};
@@ -193,16 +192,6 @@ const addMapboxDetail = (data) => {
           images: item.google.inline_images ? item.google.inline_images : null,
         },
       };
-      matchEmoji(
-        item.google.knowledge_graph.title,
-        item.google.knowledge_graph.description
-      )
-        .then((data) => {
-          console.log("line201 ", data);
-          place.properties.emojiType = data;
-          console.log(place.properties);
-        })
-        .catch((err) => console.error(err));
     } else if (
       item.google.local_results &&
       item.google.local_results.places &&
@@ -266,16 +255,6 @@ const addMapboxDetail = (data) => {
             : null,
         },
       };
-      matchEmoji(
-        item.google.local_results.places[0].title,
-        item.google.local_results.places[0].description
-      )
-        .then((data) => {
-          console.log("line274 ", data);
-          place.properties.emojiType = data;
-          console.log(place.properties);
-        })
-        .catch((err) => console.error(err));
     } else if (item.gmaps.local_results && item.gmaps.local_results[0]) {
       console.log("goes after if statement3");
 
@@ -337,16 +316,6 @@ const addMapboxDetail = (data) => {
             : null,
         },
       };
-      matchEmoji(
-        item.gmaps.local_results[0].title,
-        item.gmaps.local_results[0].description
-      )
-        .then((data) => {
-          console.log("line345 ", data);
-          place.properties.emojiType = data;
-          console.log(place.properties);
-        })
-        .catch((err) => console.error(err));
     } else if (item.gmaps.place_results) {
       console.log("goes after if statement4");
 
@@ -409,6 +378,7 @@ const addMapboxDetail = (data) => {
       };
     }
     console.log("goes after if statement");
+
     geojsonFeatureObj = {
       type: "Feature",
       geometry: {
@@ -439,6 +409,17 @@ const addMapboxDetail = (data) => {
         images: place.properties.images,
       },
     };
+
+    try {
+      geojsonFeatureObj.properties.emojiType = await matchEmoji(
+        geojsonFeatureObj.properties.title,
+        geojsonFeatureObj.properties.description
+      );
+      console.log(geojsonFeatureObj);
+      console.log(geojsonFeatureObj.properties.emojiType);
+    } catch (err) {
+      console.log(err);
+    }
 
     geojsonFeatureCollectionObj.features.push(geojsonFeatureObj);
 

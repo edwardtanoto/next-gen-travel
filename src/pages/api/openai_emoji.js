@@ -42,14 +42,6 @@ export default async function handler(req, res) {
         },
         {
           role: "user",
-          content: "Baitou Hot Springs",
-        },
-        {
-          role: "assistant",
-          content: "🏞️",
-        },
-        {
-          role: "user",
           content: "Kenting National Park",
         },
         {
@@ -63,6 +55,10 @@ export default async function handler(req, res) {
         {
           role: "assistant",
           content: "🏞️",
+        },
+        {
+          role: "user",
+          content: text,
         },
       ],
       temperature: 0,
