@@ -266,7 +266,7 @@ export default function Home() {
         ""
       ) : (
         <div className="form-group">
-          <p>drop tiktok travel link</p>
+          <p>drop tiktok/reels travel link</p>
           <form onSubmit={handleSubmit(onSubmit)}>
             <input
               {...register("link", { required: true })}

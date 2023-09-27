@@ -1,4 +1,5 @@
 import serpOutput from "../../../dummyData/serpOutput.json";
+import { makePostRequest } from "../../lib/api";
 
 const SerpApi = require("google-search-results-nodejs");
 const search = new SerpApi.GoogleSearch(process.env.SERP_API_KEY);
@@ -51,7 +52,7 @@ const getMultiSerpResult = async (locations) => {
 
   return Promise.all(promises).then(function (values) {
     // console.log(values);
-    // console.log(serpResult);
+    console.log(serpResult);
     return serpResult;
   });
 };
@@ -64,10 +65,12 @@ export default async function handler(req, res) {
 
       //const serpOutput = await getMultiSerpResult(req.body);
       console.log("Google2");
-      fs.writeFileSync("serpOutput.txt", JSON.stringify(serpOutput, null, 4));
+      // fs.writeFileSync("serpOutput.txt", JSON.stringify(serpOutput, null, 4));
 
       console.log(serpOutput.length);
+      console.log(serpOutput);
       const result = addMapboxDetail(serpOutput);
+      console.log(result.features);
       console.log("send details to local " + result.features.length);
 
       res.status(200).json({ result });
@@ -88,8 +91,19 @@ const addMapboxDetail = (data) => {
     features: [],
   };
 
+  const matchEmoji = async (title, desc) => {
+    const emojiResult = await makePostRequest(
+      "http://localhost:3000/api/openai_emoji",
+      {
+        data: title + " " + desc,
+      }
+    );
+    console.log(emojiResult.output.choices[0].message.content);
+    return emojiResult.output.choices[0].message.content;
+  };
+
   var geojsonFeatureObj = {};
-  data.forEach((item, index) => {
+  for (const item of data) {
     var place = {
       gps_coordinates: { longitude: 0, latitude: 0 },
       properties: {
@@ -179,6 +193,16 @@ const addMapboxDetail = (data) => {
           images: item.google.inline_images ? item.google.inline_images : null,
         },
       };
+      matchEmoji(
+        item.google.knowledge_graph.title,
+        item.google.knowledge_graph.description
+      )
+        .then((data) => {
+          console.log("line201 ", data);
+          place.properties.emojiType = data;
+          console.log(place.properties);
+        })
+        .catch((err) => console.error(err));
     } else if (
       item.google.local_results &&
       item.google.local_results.places &&
@@ -242,6 +266,16 @@ const addMapboxDetail = (data) => {
             : null,
         },
       };
+      matchEmoji(
+        item.google.local_results.places[0].title,
+        item.google.local_results.places[0].description
+      )
+        .then((data) => {
+          console.log("line274 ", data);
+          place.properties.emojiType = data;
+          console.log(place.properties);
+        })
+        .catch((err) => console.error(err));
     } else if (item.gmaps.local_results && item.gmaps.local_results[0]) {
       console.log("goes after if statement3");
 
@@ -303,6 +337,16 @@ const addMapboxDetail = (data) => {
             : null,
         },
       };
+      matchEmoji(
+        item.gmaps.local_results[0].title,
+        item.gmaps.local_results[0].description
+      )
+        .then((data) => {
+          console.log("line345 ", data);
+          place.properties.emojiType = data;
+          console.log(place.properties);
+        })
+        .catch((err) => console.error(err));
     } else if (item.gmaps.place_results) {
       console.log("goes after if statement4");
 
@@ -318,7 +362,6 @@ const addMapboxDetail = (data) => {
           description: item.gmaps.place_results.description
             ? item.gmaps.place_results.description
             : null,
-          emojiType: null,
           price: item.gmaps.place_results.price
             ? item.gmaps.place_results.price
             : null,
@@ -399,11 +442,11 @@ const addMapboxDetail = (data) => {
 
     geojsonFeatureCollectionObj.features.push(geojsonFeatureObj);
 
-    insertPlace(db, geojsonFeatureObj).catch((err) => {
-      console.error(err);
-      process.exit(1);
-    });
-  });
+    // insertPlace(db, geojsonFeatureObj).catch((err) => {
+    //   console.error(err);
+    //   process.exit(1);
+    // });
+  }
   //   console.log(tempListArr);
   console.log(
     "in tempList last line" + geojsonFeatureCollectionObj.features.length
@@ -448,26 +491,26 @@ async function insertPlace(db, geojsonFeatureObj) {
     RETURNING id
     `
   );
-  //geojsonFeatureObj.properties.timeSpend
-  //geojsonFeatureObj.properties.permanently_closed
-  //   const placeId = placeResult.rows[0].id;
+  geojsonFeatureObj.properties.timeSpend;
+  geojsonFeatureObj.properties.permanently_closed;
+  const placeId = placeResult.rows[0].id;
 
-  //   await db.query(
-  //     `
-  //         INSERT INTO externallinks (
-  //           place_id,
-  //           website,
-  //           googlemap,
-  //           time_created
-  //         )
-  //         VALUES ($1, $2, $3, NOW())
-  //         `,
-  //     [
-  //       placeId,
-  //       geojsonFeatureObj.properties.externalLinks.website, // replace with actual value
-  //       geojsonFeatureObj.properties.externalLinks.googlemap, // replace with actual value
-  //     ]
-  //   );
+  await db.query(
+    `
+          INSERT INTO externallinks (
+            place_id,
+            website,
+            googlemap,
+            time_created
+          )
+          VALUES ($1, $2, $3, NOW())
+          `,
+    [
+      placeId,
+      geojsonFeatureObj.properties.externalLinks.website, // replace with actual value
+      geojsonFeatureObj.properties.externalLinks.googlemap, // replace with actual value
+    ]
+  );
 
   await db.dispose();
 }
