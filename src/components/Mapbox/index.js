@@ -89,9 +89,7 @@ function Mapbox(props) {
       className: `${styles["mapboxgl-popup"]}`,
     })
       .setLngLat(currentFeature.geometry.coordinates)
-      .setHTML(
-        `<h3>${currentFeature.properties.title}</h3><h4>${currentFeature.properties.address}</h4>`
-      )
+      .setHTML(`<h3>${currentFeature.properties.title}</h3>`)
       .addTo(map.current);
 
     popup.addClassName(`${styles["mapboxgl-popup"]}`);

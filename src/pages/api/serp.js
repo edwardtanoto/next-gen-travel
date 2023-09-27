@@ -427,6 +427,7 @@ const addMapboxDetail = async (data) => {
     //   console.error(err);
     //   process.exit(1);
     // });
+
   }
   //   console.log(tempListArr);
   console.log(
