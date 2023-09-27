@@ -4,61 +4,57 @@ const { sql } = require("@databases/pg");
 const db = createConnectionPool();
 
 async function insertPlace(db, geojsonFeatureObj) {
-  const sql = `
-    INSERT INTO places (
-      longitude, 
-      latitude, 
-      title, 
-      type, 
-      description, 
-      price, 
-      rating, 
-      review_count, 
-      phone, 
-      address, 
-      time_spend, 
-      permanently_closed, 
-      time_created
-    ) 
-    VALUES (
-      ${geojsonFeatureObj.geometry.coordinates[1]}, 
-      ${geojsonFeatureObj.geometry.coordinates[0]}, 
-      ${geojsonFeatureObj.properties.title}, 
-      ${geojsonFeatureObj.properties.type}, 
-      ${geojsonFeatureObj.properties.description}, 
-      ${geojsonFeatureObj.properties.price}, 
-      ${geojsonFeatureObj.properties.rating}, 
-      ${geojsonFeatureObj.properties.reviewCount}, 
-      ${geojsonFeatureObj.properties.phone}, 
-      ${geojsonFeatureObj.properties.address}, 
-      ${null},
-      ${null}, 
-      NOW()) 
-    RETURNING id
-    `;
-
-  const placeResult = await db.query(sql);
+  const placeResult = await db.query(sql`
+  INSERT INTO places (
+    longitude, 
+    latitude, 
+    title, 
+    type, 
+    description, 
+    price, 
+    rating, 
+    review_count, 
+    phone, 
+    address, 
+    time_spend, 
+    permanently_closed, 
+    time_created
+  ) 
+  VALUES (
+    ${geojsonFeatureObj.geometry.coordinates[1]}, 
+    ${geojsonFeatureObj.geometry.coordinates[0]}, 
+    ${geojsonFeatureObj.properties.title}, 
+    ${geojsonFeatureObj.properties.type}, 
+    ${geojsonFeatureObj.properties.description}, 
+    ${geojsonFeatureObj.properties.price}, 
+    ${geojsonFeatureObj.properties.rating}, 
+    ${geojsonFeatureObj.properties.reviewCount}, 
+    ${geojsonFeatureObj.properties.phone}, 
+    ${geojsonFeatureObj.properties.address}, 
+    ${null},
+    ${null}, 
+    NOW()) 
+  RETURNING id
+  `);
   console.log(placeResult);
-  if (placeResult && placeResult.rows && placeResult.rows[0]) {
-    const placeId = placeResult.rows[0].id;
-
-    await db.query(
-      `
-        INSERT INTO externallinks (
-          place_id,
-          website,
-          googlemap,
-          time_created
-        )
-        VALUES (
-          ${placeId},
-          ${geojsonFeatureObj.properties.externalLinks.website},
-          ${geojsonFeatureObj.properties.externalLinks.googlemap},
-          NOW()
-        ) 
-        `
-    );
-  }
+  //   if (placeResult && placeResult[0]) {
+  //     const placeId = placeResult[0].id;
+  //     console.log(placeId);
+  //     await db.query(
+  //       sql`
+  //         INSERT INTO externallinks (
+  //           place_id,
+  //           website,
+  //           googlemap
+  //         )
+  //         VALUES (
+  //           ${placeId},
+  //           ${geojsonFeatureObj.properties.externalLinks.website},
+  //           ${geojsonFeatureObj.properties.externalLinks.googlemap}
+  //         )
+  //         `
+  //     );
+  //   }
 
   await db.dispose();
 }

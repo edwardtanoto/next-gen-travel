@@ -3,15 +3,11 @@ import { useRouter } from "next/navigation";
 import { makePostRequest } from "../../lib/api";
 
 const Test = () => {
-  const { push } = useRouter();
-
   const fetchSerp = async () => {
     try {
       const serpResult = await makePostRequest(
-        `${process.env.URL}/api/awsOcr`,
-        "Taipei 101 Taiwan"
+        `${process.env.URL}/api/awsOcrOld`
       );
-
       return serpResult.result;
     } catch (error) {
       console.error(error);
@@ -20,18 +16,7 @@ const Test = () => {
 
   fetchSerp();
 
-  return (
-    <span
-    // onClick={function () {
-    //   push({
-    //     pathname: "/map",
-    //     query: { location: ["Curry Hyuga, Burlingame", "Midway SF"] },
-    //   });
-    // }}
-    >
-      here
-    </span>
-  );
+  return <span>here</span>;
 };
 
 export default Test;
