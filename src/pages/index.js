@@ -99,10 +99,18 @@ export default function Home() {
   } = useForm();
 
   const onSubmit = (data) => {
-    const link = `https://tiktok-download-video-no-watermark.p.rapidapi.com/tiktok/info?url=${encodeURIComponent(
-      data.link
-    )}`;
-    fetchTiktok(link);
+    if (data.link.includes("tiktok")) {
+      const link = `https://tiktok-download-video-no-watermark.p.rapidapi.com/tiktok/info?url=${encodeURIComponent(
+        data.link
+      )}`;
+      fetchFromSocial(link, "tiktok");
+    } else if (data.link.includes("instagram")) {
+      const link = `https://instagram-media-downloader.p.rapidapi.com/rapid/post.php?url=${encodeURIComponent(
+        data.link
+      )}`;
+      fetchFromSocial(link, "instagram");
+    }
+    // error handling
   };
 
   const regex = /(tiktok|Instagram)/i;
@@ -142,15 +150,28 @@ export default function Home() {
     };
   }, []);
 
-  const fetchTiktok = async (link) => {
+  const fetchFromSocial = async (link, platform) => {
     console.log("fetchTiktok ", link);
-    const options = {
-      method: "GET",
-      headers: {
-        "X-RapidAPI-Key": process.env.RAPIDAPI_KEY,
-        "X-RapidAPI-Host": "tiktok-download-video-no-watermark.p.rapidapi.com",
-      },
-    };
+    let options;
+    if (platform === "tiktok") {
+      options = {
+        method: "GET",
+        headers: {
+          "X-RapidAPI-Key": process.env.RAPIDAPI_KEY,
+          "X-RapidAPI-Host":
+            "tiktok-download-video-no-watermark.p.rapidapi.com",
+        },
+      };
+    } else if (platform === "instagram") {
+      options = {
+        method: "GET",
+        headers: {
+          "X-RapidAPI-Key":
+            "5925a974a7msh8391ebb41b83c39p168aa2jsn2acfd9cb904f",
+          "X-RapidAPI-Host": "instagram-media-downloader.p.rapidapi.com",
+        },
+      };
+    }
 
     try {
       let tiktokResult = {
@@ -211,27 +232,58 @@ export default function Home() {
             "https://api16-normal-c-useast1a.tiktokv.com/aweme/v1/play/?video_id=v09044g40000cgatum3c77u47kpsgmfg&line=0&is_play_url=1&source=PackSourceEnum_AWEME_DETAIL&file_id=dbe8e427442044df94a8b7488c213898&item_id=7211918122868051205&signv3=dmlkZW9faWQ7ZmlsZV9pZDtpdGVtX2lkLmVhNzEzZDkzZjI4ZjU1MzJjYzI5OTVkMjk0M2I2ZTlk",
         },
       };
+      // let instagramResult = {
+      //   video:
+      //     "https://instagram.fbkk9-2.fna.fbcdn.net/v/t66.30100-16/122524287_1009543780305225_7045794615489955319_n.mp4?cb=d185f762-f577f03c&efg=e30&_nc_ht=instagram.fbkk9-2.fna.fbcdn.net&_nc_cat=109&_nc_ohc=2WK8Orn-2PUAX9VfFWo&edm=AP_V10EBAAAA&ccb=7-5&oh=00_AfAspOl5IRRGKEylx0qKU5Y482HHa1ujWLeT8OQgNbAZRg&oe=6515DD09&_nc_sid=2999b8",
+      //   height: 1920,
+      //   width: 1080,
+      //   image:
+      //     "https://instagram.fbkk9-3.fna.fbcdn.net/v/t51.2885-15/381616284_340116148466297_5164839403958485759_n.jpg?stp=dst-jpg_e15_fr_p1080x1080&cb=d185f762-f577f03c&efg=e30&_nc_ht=instagram.fbkk9-3.fna.fbcdn.net&_nc_cat=105&_nc_ohc=RXLTHN5wNG8AX8dj3Gk&edm=AP_V10EBAAAA&ccb=7-5&oh=00_AfAqO7i9S59qjR6ovGUF9kO2cwB-31w83Vi95FToeF_V6g&oe=651755C4&_nc_sid=2999b8",
+      //   caption:
+      //     "Why overpay in Hong Kong? Get that 5-star room and save big using @hotel’s discounts! Find the website in the bio!\n\n🎥:@chantelle_pang\n\n#hotels #bookings #discoverhotels #besthotels #hongkong",
+      // };
       setLoading(true);
-      // const response = await fetch(link, options);
-      // let tiktokResult = await response.text();
-      //tiktokResult = JSON.parse(tiktokResult);
-      console.log("tr ", tiktokResult);
-      //const whisperResult = await makePostRequest("/api/whisper", tiktokResult);
-      const whisperResult =
+      let whisperResult;
+      let text;
+      if (platform === "tiktok") {
+        const response = await fetch(link, options);
+
+        // let tiktokResult = await response.text();
+        //tiktokResult = JSON.parse(tiktokResult);
+
+        console.log("tr ", tiktokResult);
+        //const whisperResult = await makePostRequest("/api/whisper", tiktokResult);
+        setTiktokData(tiktokResult);
+        // console.log(whisperResult.output)
+      } else if (platform === "instagram") {
+        console.log(link, options);
+        const response = await fetch(link, options);
+        console.log(options);
+        let instagramResult = await response.text();
+        //instagramResult = JSON.parse(instagramResult);
+        console.log("ig ", instagramResult);
+        //const whisperResult = await makePostRequest("/api/whisper", instagramResult);
+      }
+
+      whisperResult =
         "Here are the top 10 places to visit in Taiwan. Taipei 101, the iconic skyscraper in Taipei, is one of the tallest buildings in the world and offers stunning views of the city. The building also has the fastest elevator in the world, which can transport visitors from the 5th floor to the 89th floor in just 37 seconds. Taroko Gorge Located in the Taroko National Park, Taroko Gorge is a breathtaking natural wonder with towering cliffs, waterfalls, and marble formations. The largest lake in Taiwan, Sun Moon Lake, is a popular tourist destination for its scenic beauty, cycling routes, and hiking trails. It is a must-visit destination for anyone traveling to Taiwan, offering a unique and unforgettable experience for visitors of all ages. Jiufen A charming town located in the mountains near Taipei, Jufen is famous for its narrow alleys, tea houses, and stunning ocean views. Kenting National Park Located at the southern tip of Taiwan, Kenting National Park is a popular beach destination with a wide variety of outdoor activities. Tainan The oldest city in Taiwan, Tainan is famous for its historical sites, temples, and traditional food. Yashin National Park Home to Taiwan's highest peak, Yashin National Park is a hiker's paradise with stunning mountain views and natural hot springs. Baitou Hot Springs Located just outside Taipei, Baitou is a popular hot spring destination known for its natural hot springs, spas, and beautiful scenery. Alishan A mountainous region in central Taiwan, Alishan is famous for its scenic railway, tea plantations, and stunning sunrises. Visitors can enjoy the natural beauty of the forest by taking a train ride through the mountains or by hiking along the many trails that wind through the forest. The Fo Guangshan Buddha Museum is a large Buddhist cultural complex located in the Daxiu district of Kyushu. The museum contains a vast collection of Buddhist art and artifacts, as well as numerous exhibits on Buddhist history, philosophy, and practice. Where do you want to visit next?";
-      setTiktokData(tiktokResult);
-      // console.log(whisperResult.output)
+
       setTextFromSpeech(whisperResult.output);
       // console.log(textFromSpeech)
-      console.log("whr ", whisperResult);
-      const text = whisperResult + tiktokResult.data.desc;
-      console.log("txt ", text);
+      // console.log("whr ", whisperResult);
+      if (platform === "tiktok") {
+        text = whisperResult + tiktokResult.data.desc;
+      } else if (platform === "instagram") {
+        text = whisperResult + instagramResult.caption;
+      }
+
+      // console.log("txt ", text);
       const locationResult = await makePostRequest("/api/openai_location", {
         data: text,
       });
 
       setLocations(locationResult.output.choices[0].message.content);
-      console.log("loc ", locations);
+      // console.log("loc ", locations);
       setLoading(false);
       // // to do next -> connect to serp api and find the coordinates and video ocr
     } catch (error) {
@@ -266,7 +318,7 @@ export default function Home() {
         ""
       ) : (
         <div className="form-group">
-          <p>drop tiktok travel link</p>
+          <p>drop tiktok/reels travel link</p>
           <form onSubmit={handleSubmit(onSubmit)}>
             <input
               {...register("link", { required: true })}

@@ -21,6 +21,7 @@
   position: absolute;
   /* right: 25%; */
   right: 0;
+  height: 100%;
   width: 100%;
   top: 0;
   bottom: 0;
@@ -154,7 +155,7 @@
   margin-top: 15px;
 }
 
-.mapboxgl-popup-anchor-top > .mapboxgl-popup-tip {
+.mapboxgl-popup-anchor-top {
   border-bottom-color: #91c949;
 }
 

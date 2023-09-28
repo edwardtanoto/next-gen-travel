@@ -20,7 +20,7 @@ function Mapbox(props) {
   useEffect(() => {
     console.log(
       "mapbox props ",
-      `${JSON.parse(props.router.query.location.replace(/'/g, '"'))}`
+      `${typeof JSON.parse(props.router.query.location.replace(/'/g, '"'))}`
     );
     const fetchSerp = async () => {
       try {
@@ -89,9 +89,7 @@ function Mapbox(props) {
       className: `${styles["mapboxgl-popup"]}`,
     })
       .setLngLat(currentFeature.geometry.coordinates)
-      .setHTML(
-        `<h3>${currentFeature.properties.title}</h3><h4>${currentFeature.properties.address}</h4>`
-      )
+      .setHTML(`<h3>${currentFeature.properties.title}</h3>`)
       .addTo(map.current);
 
     popup.addClassName(`${styles["mapboxgl-popup"]}`);
@@ -188,7 +186,9 @@ function Mapbox(props) {
       /* Assign a unique `id` to the marker. */
       el.id = `marker-${marker.properties.id}`;
       /* Assign the `marker` class to each marker for styling. */
-      el.innerHTML += `🍽️`;
+      console.log(data.marker);
+      console.log("emoji ", `${marker.properties.emojiType}`);
+      el.innerHTML += `${marker.properties.emojiType}`;
       el.style.cssText =
         "text-indent:17.5px;font-size: 20px;line-height: 35px;";
 
