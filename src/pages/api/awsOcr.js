@@ -1,196 +1,112 @@
 const AWS = require("aws-sdk");
-const path = require("path");
-const sleep = require("util").promisify(setTimeout);
-
-// Configure AWS SDK
-AWS.config.update({
-  region: "us-east-1",
-});
+const OpenAI = require("openai");
 
 export default async function handler(req, res) {
-  if (req.method === "POST") {
-    try {
-      const s3 = new AWS.S3({});
+  // Configure AWS SDK
+  AWS.config.update({
+    region: "us-east-1",
+  });
 
-      s3.listBuckets(function (err, data) {
-        if (err) {
-          console.log("Error", err);
-        } else {
-          console.log("Success", data.Buckets);
-        }
-      });
+  const s3 = new AWS.S3();
+  const rekognition = new AWS.Rekognition();
 
-      const transcoder = new AWS.ElasticTranscoder();
-      const rekognition = new AWS.Rekognition();
-
-      const uploadVideoToS3 = async (videoPath, bucketName) => {
-        var videoData;
-        try {
-          videoData = require("fs").readFileSync(path.resolve(videoPath));
-        } catch (error) {
-          console.error("Error encountered:", error);
-        }
-        const command = {
+  const startVideoTextDetection = async (bucketName, videoKey) => {
+    const params = {
+      Video: {
+        S3Object: {
           Bucket: bucketName,
-          Key: "video.mp4",
-          Body: videoData,
-        };
+          Name: videoKey,
+        },
+      },
+    };
 
-        try {
-          const response = await s3.upload(command);
-          console.log(response);
-          return response.Location;
-        } catch (error) {
-          console.error("Error encountered:", error);
-        }
-      };
+    const response = await rekognition.startTextDetection(params).promise();
+    return response.JobId;
+  };
 
-      const extractKeyframes = async (
-        inputKey,
-        outputKey,
-        bucketName,
-        pipelineId
-      ) => {
-        try {
-          const params = {
-            PipelineId: pipelineId,
-            Input: { Key: inputKey },
-            Outputs: [
-              {
-                Key: outputKey,
-                ThumbnailPattern: "thumbnails/{count}", // This will generate images for keyframes
-                PresetId: "1351620000001-000020", // JPEG output preset
-              },
-            ],
-          };
+  const checkVideoTextDetectionStatus = async (jobId) => {
+    let response;
+    console.log("in check video text detection");
+    do {
+      response = await rekognition.getTextDetection({ JobId: jobId }).promise();
+      console.log(response);
 
-          const result = await transcoder.createJob(params).promise();
-          return result.Job;
-        } catch (error) {
-          console.error("Error initiating transcoding job:", error);
-          throw error;
-        }
-      };
+      if (response.JobStatus === "SUCCEEDED") {
+        console.log("SUCCEEDED");
+        var keywords = new Set();
+        response.TextDetections.forEach((item) => {
+          //   console.log(typeof item);
+          if (
+            String(item).includes("TikTok") ||
+            String(item).includes("@bucket")
+          )
+            return;
 
-      const waitForTranscoderJobToFinish = async (pipelineId, jobId) => {
-        while (true) {
-          try {
-            const params = {
-              Id: jobId,
-            };
+          keywords.add(item.TextDetection.DetectedText);
+        });
+        return keywords;
+      } else if (["FAILED", "STOPPED"].includes(response.JobStatus)) {
+        throw new Error(
+          `Text detection failed with status: ${response.JobStatus}`
+        );
+      }
+      await sleep(5000); // wait for 5 seconds before polling again
+    } while (response.JobStatus === "IN_PROGRESS");
+  };
 
-            const result = await transcoder.readJob(params).promise();
+  const sleep = (milliseconds) =>
+    new Promise((resolve) => setTimeout(resolve, milliseconds));
 
-            if (["Complete", "Canceled", "Error"].includes(result.Job.Status)) {
-              return result.Job.Status;
-            }
+  (async () => {
+    const bucketName = "next-travel-app";
+    const videoKey = "video.mp4";
 
-            await sleep(5000); // wait for 5 seconds before polling again
-          } catch (error) {
-            console.error("Error checking transcoding job status:", error);
-            throw error;
-          }
-        }
-      };
+    // Start video text detection
+    console.log("Starting video text detection");
+    const jobId = await startVideoTextDetection(bucketName, videoKey);
+    console.log("Complete video text detection");
 
-      const detectTextInImage = async (bucketName, keyframeKey) => {
-        try {
-          const params = {
-            Image: {
-              S3Object: {
-                Bucket: bucketName,
-                Name: keyframeKey,
-              },
-            },
-          };
+    // Check video text detection status and retrieve detected texts
+    const detectedTexts = await checkVideoTextDetectionStatus(jobId);
+    console.log(detectedTexts);
 
-          const result = await rekognition.detectText(params).promise();
-          return result.TextDetections.map((det) => det.DetectedText);
-        } catch (error) {
-          if (error.code === "ThrottlingException") {
-            console.warn("Rate limit hit. Retrying after delay...");
-            await sleep(1000); // waiting for 1 second before retrying
-            return await detectTextInImage(bucketName, keyframeKey);
-          } else {
-            console.error("Error detecting text in image:", error);
-            throw error;
-          }
-        }
-      };
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
 
-      const listThumbnailKeys = async (bucketName, prefix) => {
-        try {
-          const params = {
-            Bucket: bucketName,
-            Prefix: prefix,
-          };
-
-          const response = await s3.listObjectsV2(params).promise();
-          return response.Contents.map((item) => item.Key);
-        } catch (error) {
-          console.error("Error listing objects in S3:", error);
-          throw error;
-        }
-      };
-
-      (async () => {
-        try {
-          const videoPath = "./dummyData/tiktok.mp4";
-          const bucketName = "next-travel-app";
-          const pipelineId = "1695717658905-rzwbo3";
-
-          // Upload video
-          console.log("Uploading video");
-          const videoLocation = await uploadVideoToS3(videoPath, bucketName);
-          console.log("Done uploading video");
-
-          // Extract keyframes
-          console.log("Extracting keyframes");
-          const job = await extractKeyframes(
-            "video.mp4",
-            "outputKeyframePrefix",
-            bucketName,
-            pipelineId
-          );
-          console.log("Done extracting keyframes");
-          console.log(job);
-
-          const jobStatus = await waitForTranscoderJobToFinish(
-            pipelineId,
-            job.Id
-          );
-          if (jobStatus !== "Complete") {
-            throw new Error(`Transcoder job ended with status: ${jobStatus}`);
-          }
-
-          // Get list of generated thumbnails
-          const thumbnailPrefix = "thumbnails/"; // adjust based on how you've set your output settings in the transcoder
-          const listOfExtractedKeyframeKeys = await listThumbnailKeys(
-            bucketName,
-            thumbnailPrefix
-          );
-
-          // Here, you might want to list objects from S3 to get all the generated thumbnails
-          // Then, send each thumbnail to Rekognition for text detection.
-          const textResults = [];
-          for (let keyframeKey of listOfExtractedKeyframeKeys) {
-            const detectedTexts = await detectTextInImage(
-              bucketName,
-              keyframeKey
-            );
-            textResults.push(...detectedTexts);
-          }
-
-          console.log(textResults);
-        } catch (error) {
-          console.error("Error in main flow:", error);
-        }
-      })();
-
-      res.status(200).json({ result });
-    } catch (err) {
-      res.status(500).json({ error: "failed to load data" });
-    }
-  } else {
-  }
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: "Your job is to clean data to get locations from objects.",
+        },
+        {
+          role: "user",
+          content:
+            "Given set of strings, get all the specific locations\n\nSet: {\n  'TikTok',\n  '@bucketlistbums',\n  '10 Most Instagrammable',\n  'Places in Istanbul',\n  '10',\n  'Most',\n  'Instagrammable',\n  'Places',\n  'in',\n  'Istanbul',\n  'ل TikTok',\n  'ل',\n  'Suleymaniye Mosque',\n  'Suleymaniye',\n  'Mosque',\n  'Galata Tower',\n  'VITAVIEN',\n  'KARVE',\n  'Galata',\n  'Tower',\n  'E',\n  'LIMAN',\n  'Ajwa Hotel Steps',\n  'Ajwa',\n  'Hotel',\n  'Steps',\n  '30',\n  'Blue Mosque',\n  'Blue',\n  'Balat',\n  'Neighborhood',\n  'Balat Neighborhood',\n  'Seven Hills Rooftop Terrace',\n  'S',\n  'Seven',\n  'Hills',\n  'Rooftop',\n  'Terrace',\n  'DE',\n  'Basilica Cistern',\n  'Basilica',\n  'Cistern',\n  'Topkapi Palace',\n  'Topkapi',\n  'Palace',\n  'Taht Rooftop',\n  'Taht',\n  'Grand Bazaar',\n  'Grand',\n  'Bazaar',\n  'Fed',\n  'FedEx',\n  'Follow me on Instagram',\n  'AJWA',\n  'Follow',\n  'me',\n  'on',\n  'Instagram',\n  'AIWA'\n}",
+        },
+        {
+          role: "assistant",
+          content:
+            "Cleaned Set: {\n  'Suleymaniye Mosque',\n  'Galata Tower',\n  'Ajwa Hotel Steps',\n  'Blue Mosque',\n  'Balat Neighborhood',\n  'Seven Hills Rooftop Terrace',\n  'Basilica Cistern',\n  'Topkapi Palace',\n  'Taht Rooftop',\n  'Grand Bazaar'\n}",
+        },
+        {
+          role: "user",
+          content: `Given set of strings, get all the specific locations ${JSON.stringify(
+            [...detectedTexts]
+          )}`,
+        },
+      ],
+      temperature: 1,
+      max_tokens: 256,
+      top_p: 1,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+    });
+    console.log(response);
+    console.log(response.choices[0]);
+    console.log(response.choices[0].message.content);
+    return response;
+  })();
 }
