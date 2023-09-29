@@ -11,7 +11,8 @@ export default function Home() {
   const { push } = useRouter();
 
   const [locations, setLocations] = useState([]);
-  const [textFromSpeech, setTextFromSpeech] = useState("");
+  const [inputPlatform, setInputPlatform] = useState("");
+
   const [count, setCount] = useState(0);
   const [tiktokData, setTiktokData] = useState({ title: "", data: "" });
   const map = useRef(null);
@@ -25,7 +26,9 @@ export default function Home() {
       style: "mapbox://styles/justinlee38/clmpqt0v504qv01p70r70flq2",
       projection: "globe",
       center: [0, 0],
-      zoom: 1.2,
+      scrollZoom: false,
+      doubleClickZoom: false,
+      zoom: 2,
     });
 
     map.current.on("style.load", () => {
@@ -98,17 +101,24 @@ export default function Home() {
     formState: { errors },
   } = useForm();
 
+  const onChange = (data) => {
+    console.log("line103 ", data.trim());
+  };
   const onSubmit = (data) => {
-    if (data.link.includes("tiktok")) {
+    if (data.includes("tiktok")) {
+      setInputPlatform("tik.png");
       const link = `https://tiktok-download-video-no-watermark.p.rapidapi.com/tiktok/info?url=${encodeURIComponent(
-        data.link
+        data
       )}`;
-      fetchFromSocial(link, "tiktok");
-    } else if (data.link.includes("instagram")) {
+      console.log(link);
+      //fetchFromSocial(link, "tiktok");
+    } else if (data.includes("instagram")) {
+      setInputPlatform("ig.png");
       const link = `https://instagram-media-downloader.p.rapidapi.com/rapid/post.php?url=${encodeURIComponent(
-        data.link
+        data
       )}`;
-      fetchFromSocial(link, "instagram");
+      console.log(link);
+      //fetchFromSocial(link, "instagram");
     }
     // error handling
   };
@@ -268,7 +278,6 @@ export default function Home() {
       whisperResult =
         "Here are the top 10 places to visit in Taiwan. Taipei 101, the iconic skyscraper in Taipei, is one of the tallest buildings in the world and offers stunning views of the city. The building also has the fastest elevator in the world, which can transport visitors from the 5th floor to the 89th floor in just 37 seconds. Taroko Gorge Located in the Taroko National Park, Taroko Gorge is a breathtaking natural wonder with towering cliffs, waterfalls, and marble formations. The largest lake in Taiwan, Sun Moon Lake, is a popular tourist destination for its scenic beauty, cycling routes, and hiking trails. It is a must-visit destination for anyone traveling to Taiwan, offering a unique and unforgettable experience for visitors of all ages. Jiufen A charming town located in the mountains near Taipei, Jufen is famous for its narrow alleys, tea houses, and stunning ocean views. Kenting National Park Located at the southern tip of Taiwan, Kenting National Park is a popular beach destination with a wide variety of outdoor activities. Tainan The oldest city in Taiwan, Tainan is famous for its historical sites, temples, and traditional food. Yashin National Park Home to Taiwan's highest peak, Yashin National Park is a hiker's paradise with stunning mountain views and natural hot springs. Baitou Hot Springs Located just outside Taipei, Baitou is a popular hot spring destination known for its natural hot springs, spas, and beautiful scenery. Alishan A mountainous region in central Taiwan, Alishan is famous for its scenic railway, tea plantations, and stunning sunrises. Visitors can enjoy the natural beauty of the forest by taking a train ride through the mountains or by hiking along the many trails that wind through the forest. The Fo Guangshan Buddha Museum is a large Buddhist cultural complex located in the Daxiu district of Kyushu. The museum contains a vast collection of Buddhist art and artifacts, as well as numerous exhibits on Buddhist history, philosophy, and practice. Where do you want to visit next?";
 
-      setTextFromSpeech(whisperResult.output);
       // console.log(textFromSpeech)
       // console.log("whr ", whisperResult);
       if (platform === "tiktok") {
@@ -311,28 +320,71 @@ export default function Home() {
   }, [continents]);
 
   return (
-    <div className="text-center">
+    <div>
       <div ref={mapContainer} className="map-container"></div>
-      <div className="title">/world.</div>
-      {loading ? (
-        ""
-      ) : (
+      <div
+        className="header"
+        style={{
+          fontFamily: "Space Grotesk",
+          fontWeight: 900,
+        }}
+      >
+        milky way/earth/.
+      </div>
+      <div>
+        <h1 className="title">SHARE MAP WITH YOUR FRIENDS.</h1>
+        <div
+          className="link-group"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontWeight: "600",
+            fontFamily: "Space Grotesk",
+          }}
+        >
+          <p>example videos</p>
+          <p>join waitlist</p>
+          <p>our community</p>
+          <p>changelogs</p>
+        </div>
         <div className="form-group">
-          <p>drop tiktok/reels travel link</p>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <input
-              {...register("link", { required: true })}
-              className="input-box"
-            />
+          <form
+            // onChange={handleSubmit(onChange)}
+            onPaste={handleSubmit(onChange)}
+          >
+            <span className="input-bg">
+              <span className="input-bg-image" style={{ alignSelf: "center" }}>
+                <img
+                  src={`/${inputPlatform !== "" ? inputPlatform : "tik.png"}`}
+                  width={"24px"}
+                  style={{ padding: "6px", alignSelf: "center" }}
+                />
+              </span>
+              <input
+                placeholder="paste tiktok/reels link"
+                {...register("link", { required: true })}
+                onPaste={function (e) {
+                  onSubmit(e.clipboardData.getData("Text"));
+                  console.log(e.clipboardData.getData("Text"));
+                }}
+                className="input-box"
+              />
+            </span>
             <div>
               <p id="outbox"></p>
             </div>
-            {/* <br />
-        <br /> */}
-            <input type="submit" className="submit-box" id="outbox" />
+            {/* <input type="submit" className="submit-box" id="outbox" /> */}
           </form>
+          <br />
+          <br />
+          <p className="description">
+            our mission is to fund every continent with japanese toilet,
+            starting from a small city in north america named san franciso. (put
+            some writing here)
+          </p>
         </div>
-      )}
+      </div>
+      {loading ? "" : ""}
       {/* <p className="py-4">{textFromSpeech}</p>
       <p className="py-4">
         caption: {tiktokData.data === null ? "null" : tiktokData.data.desc}
