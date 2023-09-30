@@ -1,4 +1,4 @@
-import serpOutput from "../../../dummyData/serpOutput.json";
+// import serpOutput from "../../../dummyData/serpOutput.json";
 
 const SerpApi = require("google-search-results-nodejs");
 const search = new SerpApi.GoogleSearch(process.env.SERP_API_KEY);
@@ -59,13 +59,23 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
       console.log("Google");
-      //   console.log(req.body);
-      //const serpOutput = await getMultiSerpResult(req.body);
+      console.log(req.body);
+      console.time("serp");
+
+      const serpOutput = await getMultiSerpResult(req.body);
+      console.log("serp");
+      console.timeEnd("serp");
+
       console.log("Google2");
       fs.writeFileSync("serpOutput.txt", JSON.stringify(serpOutput, null, 4));
 
       console.log(serpOutput.length);
+      console.time("add mapbox detail");
+
       const result = addMapboxDetail(serpOutput);
+      console.log("add mapbox detail");
+      console.timeEnd("add mapbox detail");
+
       console.log("send details to local " + result.features.length);
 
       res.status(200).json({ result });
@@ -111,7 +121,6 @@ const addMapboxDetail = (data) => {
       },
     };
     geojsonFeatureObj = {};
-    console.log("goes after if statement");
 
     if (
       item.google.knowledge_graph &&
@@ -119,8 +128,6 @@ const addMapboxDetail = (data) => {
       item.google.knowledge_graph.local_map.gps_coordinates &&
       item.google.knowledge_graph.local_map.gps_coordinates.longitude
     ) {
-      console.log("enter knowledge graph map1");
-
       place = {
         gps_coordinates: item.google.knowledge_graph.local_map.gps_coordinates,
         properties: {
@@ -182,8 +189,6 @@ const addMapboxDetail = (data) => {
       item.google.local_results.places &&
       item.google.local_results.places[0]
     ) {
-      console.log("goes after if statement2");
-
       place = {
         gps_coordinates: item.google.local_results.places[0].gps_coordinates,
         properties: {
@@ -241,8 +246,6 @@ const addMapboxDetail = (data) => {
         },
       };
     } else if (item.gmaps.local_results && item.gmaps.local_results[0]) {
-      console.log("goes after if statement3");
-
       place = {
         gps_coordinates: item.gmaps.local_results[0].gps_coordinates,
         properties: {
@@ -302,8 +305,6 @@ const addMapboxDetail = (data) => {
         },
       };
     } else if (item.gmaps.place_results) {
-      console.log("goes after if statement4");
-
       place = {
         gps_coordinates: item.gmaps.place_results.gps_coordinates,
         properties: {

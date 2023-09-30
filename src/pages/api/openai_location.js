@@ -7,6 +7,8 @@ export default async function handler(req, res) {
       apiKey: process.env.OPENAI_KEY,
     });
 
+    console.log("start taking text and running on openAI");
+
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
@@ -14,7 +16,6 @@ export default async function handler(req, res) {
           role: "system",
           content:
             "Your job is to find location name and city name from text in this format below. If there are multiple locations, add everything inside the array. \n [location_name, city_name].",
-
         },
         {
           role: "user",
@@ -28,6 +29,8 @@ export default async function handler(req, res) {
       presence_penalty: 0,
       stop: ["--"],
     });
+    console.log(response.choices[0].message);
+
     res.status(200).json({ output: response });
   } else {
   }
