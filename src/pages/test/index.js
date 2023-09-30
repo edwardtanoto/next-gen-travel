@@ -3,16 +3,24 @@ import { useRouter } from "next/navigation";
 import { makePostRequest } from "../../lib/api";
 
 const Test = () => {
-  const { push } = useRouter();
-
   const fetchSerp = async () => {
     try {
-      const serpResult = await makePostRequest(
-        "/api/serp_gmaps",
-        "Taipei 101 Taiwan"
-      );
+      console.log("start ocr");
 
-      return serpResult.result;
+      const ocrResult = await makePostRequest(
+        `${process.env.URL}/api/awsOcrOld`
+      );
+      console.log(ocrResult);
+      // console.log("completed ocr");
+
+      // const openAIResult = await await makePostRequest(
+      //   `${process.env.URL}/api/openai_ocr_location`,
+      //   ocrResult
+      // );
+      // console.log("completed openai");
+
+      console.log(openAIResult.choices[0].message.content);
+      return openAIResult.choices[0].message.content;
     } catch (error) {
       console.error(error);
     }
@@ -20,18 +28,7 @@ const Test = () => {
 
   fetchSerp();
 
-  return (
-    <span
-      onClick={function () {
-        push({
-          pathname: "/map",
-          query: { location: ["Curry Hyuga, Burlingame", "Midway SF"] },
-        });
-      }}
-    >
-      here
-    </span>
-  );
+  return <span>here</span>;
 };
 
 export default Test;
