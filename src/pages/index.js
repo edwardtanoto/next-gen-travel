@@ -7,20 +7,21 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
+const setupMapInteraction = (map, spinGlobe) => {};
+
 export default function Home() {
   const { push } = useRouter();
 
   const [locations, setLocations] = useState([]);
   const [inputPlatform, setInputPlatform] = useState("");
-
-  const [count, setCount] = useState(0);
-  const [tiktokData, setTiktokData] = useState({ title: "", data: "" });
-  const map = useRef(null);
-  const mapContainer = useRef(null);
   const [loading, setLoading] = useState(false);
 
+  const map = useRef(null);
+  const mapContainer = useRef(null);
+
   useEffect(() => {
-    if (map.current) return; // initialize map only once
+    if (map.current) return;
+
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: "mapbox://styles/justinlee38/clmpqt0v504qv01p70r70flq2",
@@ -34,7 +35,6 @@ export default function Home() {
     map.current.on("style.load", () => {
       map.current.setFog(null);
     });
-
     // The following values can be changed to control rotation speed:
     // At low zooms, complete a revolution every two minutes.
     const secondsPerRevolution = 30;
@@ -42,10 +42,8 @@ export default function Home() {
     const maxSpinZoom = 5;
     // Rotate at intermediate speeds between zoom levels 3 and 5.
     const slowSpinZoom = 3;
-
     let userInteracting = false;
     let spinEnabled = true;
-
     function spinGlobe() {
       const zoom = map.current.getZoom();
       if (spinEnabled && !userInteracting && zoom < maxSpinZoom) {
@@ -64,35 +62,19 @@ export default function Home() {
     }
     spinGlobe();
 
-    map.current.on("mousedown", () => {
-      userInteracting = true;
-    });
+    map.current.on("mousedown", () => (userInteracting = true));
 
-    // Restart spinning the globe when interaction is complete
-    map.current.on("mouseup", () => {
+    const resetInteraction = () => {
       userInteracting = false;
       spinGlobe();
-    });
+    };
 
-    // These events account for cases where the mouse has moved
-    // off the map, so 'mouseup' will not be fired.
-    map.current.on("dragend", () => {
-      userInteracting = false;
-      spinGlobe();
-    });
-    map.current.on("pitchend", () => {
-      userInteracting = false;
-      spinGlobe();
-    });
-    map.current.on("rotateend", () => {
-      userInteracting = false;
-      spinGlobe();
-    });
-
-    map.current.on("moveend", () => {
-      spinGlobe();
-    });
-  });
+    map.current.on("mouseup", resetInteraction);
+    map.current.on("dragend", resetInteraction);
+    map.current.on("pitchend", resetInteraction);
+    map.current.on("rotateend", resetInteraction);
+    map.current.on("moveend", spinGlobe);
+  }, []);
 
   const {
     register,
@@ -104,20 +86,19 @@ export default function Home() {
     console.log("line103 ", data.trim());
   };
   const onSubmit = (data) => {
-    if (data.includes("tiktok")) {
-      setInputPlatform("tik.png");
-      const link = `https://tiktok-download-video-no-watermark.p.rapidapi.com/tiktok/info?url=${encodeURIComponent(
-        data
-      )}`;
-      console.log(link);
-      fetchFromSocial(link, "tiktok");
-    } else if (data.includes("instagram")) {
-      setInputPlatform("ig.png");
-      const link = `https://instagram-media-downloader.p.rapidapi.com/rapid/post.php?url=${encodeURIComponent(
-        data
-      )}`;
-      console.log(link);
-      fetchFromSocial(link, "instagram");
+    const isTikTok = data.includes("tiktok");
+    const isInstagram = data.includes("instagram");
+
+    if (isTikTok || isInstagram) {
+      setInputPlatform(isTikTok ? "tik.png" : "ig.png");
+
+      const baseApiUrl = isTikTok
+        ? "https://tiktok-download-video-no-watermark.p.rapidapi.com/tiktok/info"
+        : "https://instagram-media-downloader.p.rapidapi.com/rapid/post_v2.php";
+
+      const link = `${baseApiUrl}?url=${encodeURIComponent(data)}`;
+
+      fetchFromSocial(link, isTikTok ? "tiktok" : "instagram");
     }
     // error handling
   };
@@ -166,7 +147,8 @@ export default function Home() {
       options = {
         method: "GET",
         headers: {
-          "X-RapidAPI-Key": process.env.RAPIDAPI_KEY,
+          "X-RapidAPI-Key":
+            "456b9d753bmsh684626de7cfebc7p1d7469jsn2f4e9d178868",
           "X-RapidAPI-Host":
             "tiktok-download-video-no-watermark.p.rapidapi.com",
         },
@@ -176,7 +158,7 @@ export default function Home() {
         method: "GET",
         headers: {
           "X-RapidAPI-Key":
-            "5925a974a7msh8391ebb41b83c39p168aa2jsn2acfd9cb904f",
+            "456b9d753bmsh684626de7cfebc7p1d7469jsn2f4e9d178868",
           "X-RapidAPI-Host": "instagram-media-downloader.p.rapidapi.com",
         },
       };
@@ -193,19 +175,19 @@ export default function Home() {
         let tiktokResult = await response.text();
         tiktokResult = JSON.parse(tiktokResult);
         console.log("tr ", tiktokResult);
-        whisperResult = await makePostRequest("/api/whisper", tiktokResult);
+        whisperResult = makePostRequest("/api/whisper", tiktokResult);
         ocrResult = await makePostRequest("/api/awsOcr", tiktokResult);
         text = whisperResult + tiktokResult.data.desc + ocrResult;
       } else if (platform === "instagram") {
         console.log(link, options);
         const response = await fetch(link, options);
         console.log(options);
-        let instagramResult = await response.text();
-        instagramResult = JSON.parse(instagramResult);
+        let instagramResult = await response.json();
         console.log("ig ", instagramResult);
-        whisperResult = await makePostRequest("/api/whisper", instagramResult);
-        ocrResult = await makePostRequest("/api/awsOcr", tiktokResult);
-        text = whisperResult + instagramResult.caption + ocrResult;
+        whisperResult = makePostRequest("/api/whisper", instagramResult);
+        ocrResult = await makePostRequest("/api/awsOcr", instagramResult);
+        text =
+          whisperResult + instagramResult.items[0].caption.text + ocrResult;
       }
 
       // whisperResult =
@@ -216,9 +198,7 @@ export default function Home() {
       });
       console.log("open api location");
       console.timeEnd("open api location");
-
       setLocations(locationResult.output.choices[0].message.content);
-      // console.log("loc ", locations);
       setLoading(false);
       // // to do next -> connect to serp api and find the coordinates and video ocr
     } catch (error) {
@@ -232,18 +212,6 @@ export default function Home() {
       push({ pathname: "/map", query: { location: locations } });
     }
   }, [locations]);
-
-  const continents = ["asia", "europe", "africa", "america"];
-  const handleInput = (e) => {
-    setLink(e.target.value);
-  };
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setCount((prevIndex) => (prevIndex + 1) % continents.length);
-    }, 2500);
-
-    return () => clearInterval(intervalId); // Cleanup the interval on unmount
-  }, [continents]);
 
   return (
     <div>
@@ -268,10 +236,42 @@ export default function Home() {
             fontFamily: "Space Grotesk",
           }}
         >
-          <p>example videos</p>
-          <p>join waitlist</p>
-          <p>our community</p>
-          <p>changelogs</p>
+          <p>
+            <a
+              href="https://travelba.notion.site/example-tiktok-reels-videos-af1f8e17f1744598810db4b6ae91f2e2?pvs=4"
+              target="_blank"
+              className="link-group-content"
+            >
+              example videos
+            </a>
+          </p>
+          <p>
+            <a
+              href="https://airtable.com/appctyRzceyhU0pFf/shrOg7scx2zlq1YGz"
+              target="_blank"
+              className="link-group-content"
+            >
+              join waitlist
+            </a>
+          </p>
+          <p>
+            <a
+              href="https://travelba.notion.site/e921498e2b884f3e979c3bedaab92be6?v=6bae4287bb4b4553b953423eb1f59b15&pvs=4"
+              target="_blank"
+              className="link-group-content"
+            >
+              our community
+            </a>
+          </p>
+          <p>
+            <a
+              href="https://travelba.notion.site/changelogs-81b8b3fff2ab4c36a8cca609289d33ba?pvs=4"
+              target="_blank"
+              className="link-group-content"
+            >
+              changelogs
+            </a>
+          </p>
         </div>
         <div className="form-group">
           <form
@@ -296,10 +296,6 @@ export default function Home() {
                 className="input-box"
               />
             </span>
-            <div>
-              <p id="outbox"></p>
-            </div>
-            {/* <input type="submit" className="submit-box" id="outbox" /> */}
           </form>
           <br />
           <br />

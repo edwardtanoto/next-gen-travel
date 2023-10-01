@@ -10,11 +10,23 @@ const rekognition = new AWS.Rekognition();
 const axios = require("axios");
 const stream = require("stream");
 export default async function handler(req, res) {
-  if (!req.body.data?.id) return;
-
+  //if (!req.body.data?.id) return;
+  let videoUrl;
+  let videoKey;
+  const isTiktok = req.body.hasOwnProperty("data");
+  const isInstagram = req.body.hasOwnProperty("items");
   const bucketName = "next-travel-app";
-  const videoKey = `video/${req.body.data.id}.mp4`;
-  const videoUrl = req.body.data.video_link_wm;
+
+  if (isTiktok) {
+    videoKey = `video/${req.body.data.id}.mp4`;
+    videoUrl = req.body.data.video_link_wm;
+  } else if (isInstagram) {
+    videoKey = `video/${req.body.items[0].code}.mp4`;
+    videoUrl = req.body.items[0].video_versions[0].url;
+    console.log("video Key: ", videoKey);
+    console.log("video URL: ", videoUrl);
+  } else return;
+
   console.log("Starting video upload ");
   console.time("upload vid to s3");
 
@@ -43,46 +55,7 @@ export default async function handler(req, res) {
 
   console.time("open ai ocr clean up location");
 
-  const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-
-  const response = await openai.chat.completions.create({
-    model: "gpt-3.5-turbo",
-    messages: [
-      {
-        role: "system",
-        content: "Your job is to clean data to get locations from objects.",
-      },
-      {
-        role: "user",
-        content:
-          "Given set of strings, get all the specific locations\n\nSet: {\n  'TikTok',\n  '@bucketlistbums',\n  '10 Most Instagrammable',\n  'Places in Istanbul',\n  '10',\n  'Most',\n  'Instagrammable',\n  'Places',\n  'in',\n  'Istanbul',\n  'ل TikTok',\n  'ل',\n  'Suleymaniye Mosque',\n  'Suleymaniye',\n  'Mosque',\n  'Galata Tower',\n  'VITAVIEN',\n  'KARVE',\n  'Galata',\n  'Tower',\n  'E',\n  'LIMAN',\n  'Ajwa Hotel Steps',\n  'Ajwa',\n  'Hotel',\n  'Steps',\n  '30',\n  'Blue Mosque',\n  'Blue',\n  'Balat',\n  'Neighborhood',\n  'Balat Neighborhood',\n  'Seven Hills Rooftop Terrace',\n  'S',\n  'Seven',\n  'Hills',\n  'Rooftop',\n  'Terrace',\n  'DE',\n  'Basilica Cistern',\n  'Basilica',\n  'Cistern',\n  'Topkapi Palace',\n  'Topkapi',\n  'Palace',\n  'Taht Rooftop',\n  'Taht',\n  'Grand Bazaar',\n  'Grand',\n  'Bazaar',\n  'Fed',\n  'FedEx',\n  'Follow me on Instagram',\n  'AJWA',\n  'Follow',\n  'me',\n  'on',\n  'Instagram',\n  'AIWA'\n}",
-      },
-      {
-        role: "assistant",
-        content:
-          "'Suleymaniye Mosque', 'Galata Tower', 'Ajwa Hotel Steps',  'Blue Mosque',  'Balat Neighborhood',  'Seven Hills Rooftop Terrace',  'Basilica Cistern',  'Topkapi Palace',  'Taht Rooftop',  'Grand Bazaar'",
-      },
-      {
-        role: "user",
-        content: `Given set of strings, get all the specific locations ${JSON.stringify(
-          [...detectedTexts]
-        )}`,
-      },
-    ],
-    temperature: 1,
-    max_tokens: 256,
-    top_p: 1,
-    frequency_penalty: 0,
-    presence_penalty: 0,
-  });
-  console.log(response);
-  console.log(response.choices[0]);
-  console.log(typeof response.choices[0].message.content);
-  console.log(response.choices[0].message.content);
-  console.log("open ai ocr clean up location");
-  console.timeEnd("open ai ocr clean up location");
+  const response = await openAIDetectLocation(detectedTexts);
 
   res.status(200).json(response.choices[0].message.content);
 }
@@ -155,6 +128,50 @@ const checkVideoTextDetectionStatus = async (jobId) => {
     }
     await sleep(5000); // wait for 5 seconds before polling again
   } while (response.JobStatus === "IN_PROGRESS");
+};
+
+const openAIDetectLocation = async (detectedTexts) => {
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-3.5-turbo",
+    messages: [
+      {
+        role: "system",
+        content: "Your job is to clean data to get locations from objects.",
+      },
+      {
+        role: "user",
+        content:
+          "Given set of strings, get all the specific locations\n\nSet: {\n  'TikTok',\n  '@bucketlistbums',\n  '10 Most Instagrammable',\n  'Places in Istanbul',\n  '10',\n  'Most',\n  'Instagrammable',\n  'Places',\n  'in',\n  'Istanbul',\n  'ل TikTok',\n  'ل',\n  'Suleymaniye Mosque',\n  'Suleymaniye',\n  'Mosque',\n  'Galata Tower',\n  'VITAVIEN',\n  'KARVE',\n  'Galata',\n  'Tower',\n  'E',\n  'LIMAN',\n  'Ajwa Hotel Steps',\n  'Ajwa',\n  'Hotel',\n  'Steps',\n  '30',\n  'Blue Mosque',\n  'Blue',\n  'Balat',\n  'Neighborhood',\n  'Balat Neighborhood',\n  'Seven Hills Rooftop Terrace',\n  'S',\n  'Seven',\n  'Hills',\n  'Rooftop',\n  'Terrace',\n  'DE',\n  'Basilica Cistern',\n  'Basilica',\n  'Cistern',\n  'Topkapi Palace',\n  'Topkapi',\n  'Palace',\n  'Taht Rooftop',\n  'Taht',\n  'Grand Bazaar',\n  'Grand',\n  'Bazaar',\n  'Fed',\n  'FedEx',\n  'Follow me on Instagram',\n  'AJWA',\n  'Follow',\n  'me',\n  'on',\n  'Instagram',\n  'AIWA'\n}",
+      },
+      {
+        role: "assistant",
+        content:
+          "'Suleymaniye Mosque', 'Galata Tower', 'Ajwa Hotel Steps',  'Blue Mosque',  'Balat Neighborhood',  'Seven Hills Rooftop Terrace',  'Basilica Cistern',  'Topkapi Palace',  'Taht Rooftop',  'Grand Bazaar'",
+      },
+      {
+        role: "user",
+        content: `Given set of strings, get all the specific locations ${JSON.stringify(
+          [...detectedTexts]
+        )}`,
+      },
+    ],
+    temperature: 1,
+    max_tokens: 256,
+    top_p: 1,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+  });
+  console.log(response);
+  console.log(response.choices[0]);
+  console.log(typeof response.choices[0].message.content);
+  console.log(response.choices[0].message.content);
+  console.log("open ai ocr clean up location");
+  console.timeEnd("open ai ocr clean up location");
+  return response;
 };
 
 const sleep = (milliseconds) =>

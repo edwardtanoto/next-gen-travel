@@ -4,7 +4,11 @@ const { sql } = require("@databases/pg");
 const db = createConnectionPool();
 
 async function insertPlace(db, geojsonFeatureObj) {
-  const placeResult = await db.query(sql`
+  console.log("in db");
+  console.log(geojsonFeatureObj.geometry);
+  console.log(geojsonFeatureObj.geometry.coordinates);
+  try {
+    const placeResult = await db.query(sql`
   INSERT INTO places (
     longitude, 
     latitude, 
@@ -36,27 +40,30 @@ async function insertPlace(db, geojsonFeatureObj) {
     NOW()) 
   RETURNING id
   `);
-  console.log(placeResult);
-  //   if (placeResult && placeResult[0]) {
-  //     const placeId = placeResult[0].id;
-  //     console.log(placeId);
-  //     await db.query(
-  //       sql`
-  //         INSERT INTO externallinks (
-  //           place_id,
-  //           website,
-  //           googlemap
-  //         )
-  //         VALUES (
-  //           ${placeId},
-  //           ${geojsonFeatureObj.properties.externalLinks.website},
-  //           ${geojsonFeatureObj.properties.externalLinks.googlemap}
-  //         )
-  //         `
-  //     );
-  //   }
+    console.log(placeResult);
+    //   if (placeResult && placeResult[0]) {
+    //     const placeId = placeResult[0].id;
+    //     console.log(placeId);
+    //     await db.query(
+    //       sql`
+    //         INSERT INTO externallinks (
+    //           place_id,
+    //           website,
+    //           googlemap
+    //         )
+    //         VALUES (
+    //           ${placeId},
+    //           ${geojsonFeatureObj.properties.externalLinks.website},
+    //           ${geojsonFeatureObj.properties.externalLinks.googlemap}
+    //         )
+    //         `
+    //     );
+    //   }
 
-  await db.dispose();
+    await db.dispose();
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 async function getPlaceDetails(placeId) {

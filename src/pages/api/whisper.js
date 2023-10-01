@@ -2,8 +2,14 @@ import Replicate from "replicate";
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
-    if (!req.body.data?.video_link_wm) return;
-    const videoURL = req.body.data.video_link_wm;
+    console.log(req.body);
+    let videoURL;
+    if (req.body.hasOwnProperty("data")) {
+      videoURL = req.body.data.video_link_wm;
+    } else {
+      videoURL = req.body.items[0].video_versions[0].url;
+    }
+    console.log(videoURL);
     // body.data.video
     const replicate = new Replicate({
       auth: process.env.REPLICATE_AUTH_KEY,
