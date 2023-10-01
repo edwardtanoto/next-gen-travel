@@ -184,6 +184,7 @@ export default function Home() {
 
     try {
       setLoading(true);
+      setInputPlatform("rolling.gif");
       let whisperResult;
       let text;
       let ocrResult;
