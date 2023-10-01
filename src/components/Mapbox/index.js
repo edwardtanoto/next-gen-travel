@@ -106,9 +106,11 @@ function Mapbox(props) {
       listing.className = `${styles.item}`;
       const imagebox = listing.appendChild(document.createElement("div"));
 
-      if (store.properties.externalLinks.googlemap) {
+      if (store.properties.images && store.properties.externalLinks.googlemap) {
         imagebox.innerHTML = `<img style="border-radius: 30px" src=\"${
-          store.properties.images[0] ? store.properties.images[0].original : ""
+          store.properties?.images[0]
+            ? store.properties.images[0]?.original
+            : ""
         }" width=\"100%\" height=\"200px\">`;
         imagebox.className = `${styles.imagebox}`;
       }

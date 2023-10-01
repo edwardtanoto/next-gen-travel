@@ -3,6 +3,7 @@ const SerpApi = require("google-search-results-nodejs");
 const search = new SerpApi.GoogleSearch(process.env.SERP_API_KEY);
 const fs = require("fs");
 const { db, insertPlace } = require("./../../lib/db");
+const { makePostRequest } = require("../lib/api");
 
 const google_params = {
   q: "",
