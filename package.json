@@ -9,7 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.420.0",
     "@databases/pg": "^5.4.1",
+    "aws-sdk": "^2.1463.0",
+    "axios": "^1.5.1",
     "cloudinary": "^1.40.0",
     "fs": "^0.0.1-security",
     "google-search-results-nodejs": "^2.1.0",
@@ -23,6 +26,7 @@
     "react-dom": "18.2.0",
     "react-hook-form": "^7.46.1",
     "replicate": "^0.17.0",
+    "request": "^2.88.2",
     "tesseract.js": "^4.1.2",
     "typewriter-effect": "^2.20.1",
     "wc": "^0.0.1",

@@ -11,7 +11,8 @@ export default function Home() {
   const { push } = useRouter();
 
   const [locations, setLocations] = useState([]);
-  const [textFromSpeech, setTextFromSpeech] = useState("");
+  const [inputPlatform, setInputPlatform] = useState("");
+
   const [count, setCount] = useState(0);
   const [tiktokData, setTiktokData] = useState({ title: "", data: "" });
   const map = useRef(null);
@@ -25,7 +26,9 @@ export default function Home() {
       style: "mapbox://styles/justinlee38/clmpqt0v504qv01p70r70flq2",
       projection: "globe",
       center: [0, 0],
-      zoom: 1.2,
+      scrollZoom: false,
+      doubleClickZoom: false,
+      zoom: 2,
     });
 
     map.current.on("style.load", () => {
@@ -33,7 +36,6 @@ export default function Home() {
     });
 
     // The following values can be changed to control rotation speed:
-
     // At low zooms, complete a revolution every two minutes.
     const secondsPerRevolution = 30;
     // Above zoom level 5, do not rotate.
@@ -98,16 +100,23 @@ export default function Home() {
     formState: { errors },
   } = useForm();
 
+  const onChange = (data) => {
+    console.log("line103 ", data.trim());
+  };
   const onSubmit = (data) => {
-    if (data.link.includes("tiktok")) {
+    if (data.includes("tiktok")) {
+      setInputPlatform("tik.png");
       const link = `https://tiktok-download-video-no-watermark.p.rapidapi.com/tiktok/info?url=${encodeURIComponent(
-        data.link
+        data
       )}`;
+      console.log(link);
       fetchFromSocial(link, "tiktok");
-    } else if (data.link.includes("instagram")) {
+    } else if (data.includes("instagram")) {
+      setInputPlatform("ig.png");
       const link = `https://instagram-media-downloader.p.rapidapi.com/rapid/post.php?url=${encodeURIComponent(
-        data.link
+        data
       )}`;
+      console.log(link);
       fetchFromSocial(link, "instagram");
     }
     // error handling
@@ -174,113 +183,39 @@ export default function Home() {
     }
 
     try {
-      let tiktokResult = {
-        link: "https://www.tiktok.com/@theguynextdoor3/video/7211918122868051205?is_from_webapp=1&sender_device=pc",
-        data: {
-          id: "7211918122868051205",
-          type: "tiktok",
-          desc: "Top 10 Places to Visit in Taiwan | #travel #taiwan #trending ",
-          create_time: 1679155542,
-          video_duration: 158267,
-          cover_uri: "tos-maliva-p-0068/o0dEMFDw98heABJA8kQYReQm9DIUbBZnQrwqpA",
-          cover_origin_uri:
-            "tos-maliva-p-0068/12497037369344e0ac56cbb582c35ba3_1679155565",
-          cover_dynamic_uri:
-            "tos-maliva-p-0068/2fcdfd2c186240b98f0dad743067f64e_1679155566",
-          author_unique_id: "theguynextdoor3",
-          author_nickname: "TheGuyNextDoor",
-          author_uid: "6922666745606685698",
-          author_avatar_uri:
-            "tos-useast2a-avt-0068-giso/b0963a9e4c0b961fa53e0719440640cf",
-          video_id: "v09044g40000cgatum3c77u47kpsgmfg",
-          video_link_nwm_hd: "",
-          statistics: {
-            aweme_id: "7211918122868051205",
-            collect_count: 12010,
-            comment_count: 241,
-            digg_count: 21554,
-            download_count: 969,
-            forward_count: 0,
-            lose_comment_count: 0,
-            lose_count: 0,
-            play_count: 569965,
-            share_count: 8294,
-            whatsapp_share_count: 1402,
-          },
-          music: {
-            id: 7211918228858441000,
-            title: "original sound - TheGuyNextDoor",
-            cover:
-              "https://p16-sign-useast2a.tiktokcdn.com/tos-useast2a-avt-0068-giso/b0963a9e4c0b961fa53e0719440640cf~c5_100x100.webp?x-expires=1694743200&x-signature=pHC%2F1zTbI6Tp5LcLRKigcfwi3Kg%3D",
-            cover_uri:
-              "tos-useast2a-avt-0068-giso/b0963a9e4c0b961fa53e0719440640cf",
-            author: "TheGuyNextDoor",
-            author_avatar_uri:
-              "tos-useast2a-avt-0068-giso/b0963a9e4c0b961fa53e0719440640cf",
-            uri: "https://sf16-ies-music-va.tiktokcdn.com/obj/musically-maliva-obj/7211918224793881349.mp3",
-          },
-          cover:
-            "https://p16-tiktokcdn-com.akamaized.net/aweme/100x100/tos-useast2a-avt-0068-giso/b0963a9e4c0b961fa53e0719440640cf.png",
-          cover_origin:
-            "https://p16-tiktokcdn-com.akamaized.net/aweme/1080x1080/tos-useast2a-avt-0068-giso/b0963a9e4c0b961fa53e0719440640cf.png",
-          cover_dynamic: "",
-          author_avatar:
-            "https://p16-tiktokcdn-com.akamaized.net/aweme/100x100/tos-useast2a-avt-0068-giso/b0963a9e4c0b961fa53e0719440640cf.png",
-          video_link_wm:
-            "https://api16-normal-c-useast1a.tiktokv.com/aweme/v1/play/?video_id=v09044g40000cgatum3c77u47kpsgmfg&line=0&watermark=1&logo_name=tiktok&source=AWEME_DETAIL&file_id=52c1fef4206b477d9e22b00f21ea403e&item_id=7211918122868051205&signv3=dmlkZW9faWQ7ZmlsZV9pZDtpdGVtX2lkLjgwZDU0NjgxZWI4ZmIxYzYxMGQ0NzdmNWYxZDhlZjYw",
-          video_link_nwm:
-            "https://api16-normal-c-useast1a.tiktokv.com/aweme/v1/play/?video_id=v09044g40000cgatum3c77u47kpsgmfg&line=0&is_play_url=1&source=PackSourceEnum_AWEME_DETAIL&file_id=dbe8e427442044df94a8b7488c213898&item_id=7211918122868051205&signv3=dmlkZW9faWQ7ZmlsZV9pZDtpdGVtX2lkLmVhNzEzZDkzZjI4ZjU1MzJjYzI5OTVkMjk0M2I2ZTlk",
-        },
-      };
-      // let instagramResult = {
-      //   video:
-      //     "https://instagram.fbkk9-2.fna.fbcdn.net/v/t66.30100-16/122524287_1009543780305225_7045794615489955319_n.mp4?cb=d185f762-f577f03c&efg=e30&_nc_ht=instagram.fbkk9-2.fna.fbcdn.net&_nc_cat=109&_nc_ohc=2WK8Orn-2PUAX9VfFWo&edm=AP_V10EBAAAA&ccb=7-5&oh=00_AfAspOl5IRRGKEylx0qKU5Y482HHa1ujWLeT8OQgNbAZRg&oe=6515DD09&_nc_sid=2999b8",
-      //   height: 1920,
-      //   width: 1080,
-      //   image:
-      //     "https://instagram.fbkk9-3.fna.fbcdn.net/v/t51.2885-15/381616284_340116148466297_5164839403958485759_n.jpg?stp=dst-jpg_e15_fr_p1080x1080&cb=d185f762-f577f03c&efg=e30&_nc_ht=instagram.fbkk9-3.fna.fbcdn.net&_nc_cat=105&_nc_ohc=RXLTHN5wNG8AX8dj3Gk&edm=AP_V10EBAAAA&ccb=7-5&oh=00_AfAqO7i9S59qjR6ovGUF9kO2cwB-31w83Vi95FToeF_V6g&oe=651755C4&_nc_sid=2999b8",
-      //   caption:
-      //     "Why overpay in Hong Kong? Get that 5-star room and save big using @hotel’s discounts! Find the website in the bio!\n\n🎥:@chantelle_pang\n\n#hotels #bookings #discoverhotels #besthotels #hongkong",
-      // };
       setLoading(true);
+      setInputPlatform("rolling.gif");
       let whisperResult;
       let text;
+      let ocrResult;
       if (platform === "tiktok") {
         const response = await fetch(link, options);
-
-        // let tiktokResult = await response.text();
-        //tiktokResult = JSON.parse(tiktokResult);
-
+        let tiktokResult = await response.text();
+        tiktokResult = JSON.parse(tiktokResult);
         console.log("tr ", tiktokResult);
-        //const whisperResult = await makePostRequest("/api/whisper", tiktokResult);
-        setTiktokData(tiktokResult);
-        // console.log(whisperResult.output)
+        whisperResult = await makePostRequest("/api/whisper", tiktokResult);
+        ocrResult = await makePostRequest("/api/awsOcr", tiktokResult);
+        text = whisperResult + tiktokResult.data.desc + ocrResult;
       } else if (platform === "instagram") {
         console.log(link, options);
         const response = await fetch(link, options);
         console.log(options);
         let instagramResult = await response.text();
-        //instagramResult = JSON.parse(instagramResult);
+        instagramResult = JSON.parse(instagramResult);
         console.log("ig ", instagramResult);
-        //const whisperResult = await makePostRequest("/api/whisper", instagramResult);
+        whisperResult = await makePostRequest("/api/whisper", instagramResult);
+        ocrResult = await makePostRequest("/api/awsOcr", tiktokResult);
+        text = whisperResult + instagramResult.caption + ocrResult;
       }
 
-      whisperResult =
-        "Here are the top 10 places to visit in Taiwan. Taipei 101, the iconic skyscraper in Taipei, is one of the tallest buildings in the world and offers stunning views of the city. The building also has the fastest elevator in the world, which can transport visitors from the 5th floor to the 89th floor in just 37 seconds. Taroko Gorge Located in the Taroko National Park, Taroko Gorge is a breathtaking natural wonder with towering cliffs, waterfalls, and marble formations. The largest lake in Taiwan, Sun Moon Lake, is a popular tourist destination for its scenic beauty, cycling routes, and hiking trails. It is a must-visit destination for anyone traveling to Taiwan, offering a unique and unforgettable experience for visitors of all ages. Jiufen A charming town located in the mountains near Taipei, Jufen is famous for its narrow alleys, tea houses, and stunning ocean views. Kenting National Park Located at the southern tip of Taiwan, Kenting National Park is a popular beach destination with a wide variety of outdoor activities. Tainan The oldest city in Taiwan, Tainan is famous for its historical sites, temples, and traditional food. Yashin National Park Home to Taiwan's highest peak, Yashin National Park is a hiker's paradise with stunning mountain views and natural hot springs. Baitou Hot Springs Located just outside Taipei, Baitou is a popular hot spring destination known for its natural hot springs, spas, and beautiful scenery. Alishan A mountainous region in central Taiwan, Alishan is famous for its scenic railway, tea plantations, and stunning sunrises. Visitors can enjoy the natural beauty of the forest by taking a train ride through the mountains or by hiking along the many trails that wind through the forest. The Fo Guangshan Buddha Museum is a large Buddhist cultural complex located in the Daxiu district of Kyushu. The museum contains a vast collection of Buddhist art and artifacts, as well as numerous exhibits on Buddhist history, philosophy, and practice. Where do you want to visit next?";
+      // whisperResult =
+      //   "Here are the top 10 places to visit in Taiwan. Taipei 101, the iconic skyscraper in Taipei, is one of the tallest buildings in the world and offers stunning views of the city. The building also has the fastest elevator in the world, which can transport visitors from the 5th floor to the 89th floor in just 37 seconds. Taroko Gorge Located in the Taroko National Park, Taroko Gorge is a breathtaking natural wonder with towering cliffs, waterfalls, and marble formations. The largest lake in Taiwan, Sun Moon Lake, is a popular tourist destination for its scenic beauty, cycling routes, and hiking trails. It is a must-visit destination for anyone traveling to Taiwan, offering a unique and unforgettable experience for visitors of all ages. Jiufen A charming town located in the mountains near Taipei, Jufen is famous for its narrow alleys, tea houses, and stunning ocean views. Kenting National Park Located at the southern tip of Taiwan, Kenting National Park is a popular beach destination with a wide variety of outdoor activities. Tainan The oldest city in Taiwan, Tainan is famous for its historical sites, temples, and traditional food. Yashin National Park Home to Taiwan's highest peak, Yashin National Park is a hiker's paradise with stunning mountain views and natural hot springs. Baitou Hot Springs Located just outside Taipei, Baitou is a popular hot spring destination known for its natural hot springs, spas, and beautiful scenery. Alishan A mountainous region in central Taiwan, Alishan is famous for its scenic railway, tea plantations, and stunning sunrises. Visitors can enjoy the natural beauty of the forest by taking a train ride through the mountains or by hiking along the many trails that wind through the forest. The Fo Guangshan Buddha Museum is a large Buddhist cultural complex located in the Daxiu district of Kyushu. The museum contains a vast collection of Buddhist art and artifacts, as well as numerous exhibits on Buddhist history, philosophy, and practice. Where do you want to visit next?";
 
-      setTextFromSpeech(whisperResult.output);
-      // console.log(textFromSpeech)
-      // console.log("whr ", whisperResult);
-      if (platform === "tiktok") {
-        text = whisperResult + tiktokResult.data.desc;
-      } else if (platform === "instagram") {
-        text = whisperResult + instagramResult.caption;
-      }
-
-      // console.log("txt ", text);
       const locationResult = await makePostRequest("/api/openai_location", {
         data: text,
       });
+      console.log("open api location");
+      console.timeEnd("open api location");
 
       setLocations(locationResult.output.choices[0].message.content);
       // console.log("loc ", locations);
@@ -311,28 +246,71 @@ export default function Home() {
   }, [continents]);
 
   return (
-    <div className="text-center">
+    <div>
       <div ref={mapContainer} className="map-container"></div>
-      <div className="title">/world.</div>
-      {loading ? (
-        ""
-      ) : (
+      <div
+        className="header"
+        style={{
+          fontFamily: "Space Grotesk",
+          fontWeight: 900,
+        }}
+      >
+        milky way/earth/.
+      </div>
+      <div>
+        <h1 className="title">SHARE MAP WITH YOUR FRIENDS.</h1>
+        <div
+          className="link-group"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontWeight: "600",
+            fontFamily: "Space Grotesk",
+          }}
+        >
+          <p>example videos</p>
+          <p>join waitlist</p>
+          <p>our community</p>
+          <p>changelogs</p>
+        </div>
         <div className="form-group">
-          <p>drop tiktok/reels travel link</p>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <input
-              {...register("link", { required: true })}
-              className="input-box"
-            />
+          <form
+            // onChange={handleSubmit(onChange)}
+            onPaste={handleSubmit(onChange)}
+          >
+            <span className="input-bg">
+              <span className="input-bg-image" style={{ alignSelf: "center" }}>
+                <img
+                  src={`/${inputPlatform !== "" ? inputPlatform : "tik.png"}`}
+                  width={"24px"}
+                  style={{ padding: "6px", alignSelf: "center" }}
+                />
+              </span>
+              <input
+                placeholder="paste tiktok/reels link"
+                {...register("link", { required: true })}
+                onPaste={function (e) {
+                  onSubmit(e.clipboardData.getData("Text"));
+                  console.log(e.clipboardData.getData("Text"));
+                }}
+                className="input-box"
+              />
+            </span>
             <div>
               <p id="outbox"></p>
             </div>
-            {/* <br />
-        <br /> */}
-            <input type="submit" className="submit-box" id="outbox" />
+            {/* <input type="submit" className="submit-box" id="outbox" /> */}
           </form>
+          <br />
+          <br />
+          <p className="description">
+            our mission is to fund every continent with japanese toilet,
+            starting from a small city in north america named san franciso. (put
+            some writing here)
+          </p>
         </div>
-      )}
+      </div>
+      {loading ? "" : ""}
       {/* <p className="py-4">{textFromSpeech}</p>
       <p className="py-4">
         caption: {tiktokData.data === null ? "null" : tiktokData.data.desc}

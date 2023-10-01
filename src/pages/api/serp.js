@@ -1,11 +1,8 @@
-import serpOutput from "../../../dummyData/serpOutput.json";
-import { makePostRequest } from "../../lib/api";
-
+// import serpOutput from "../../../dummyData/serpOutput.json";
 const SerpApi = require("google-search-results-nodejs");
 const search = new SerpApi.GoogleSearch(process.env.SERP_API_KEY);
 const fs = require("fs");
-const { sql } = require("@databases/pg");
-const db = require("./../../lib/db");
+const { db, insertPlace } = require("./../../lib/db");
 
 const google_params = {
   q: "",
@@ -61,16 +58,23 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
       console.log("Google");
-      //   console.log(req.body);
+      console.log(req.body);
+      console.time("serp");
 
-      //const serpOutput = await getMultiSerpResult(req.body);
+      const serpOutput = await getMultiSerpResult(req.body);
+      console.log("serp");
+      console.timeEnd("serp");
+
       console.log("Google2");
       // fs.writeFileSync("serpOutput.txt", JSON.stringify(serpOutput, null, 4));
 
       console.log(serpOutput.length);
-      console.log(serpOutput);
-      const result = await addMapboxDetail(serpOutput);
-      console.log(result.features);
+      console.time("add mapbox detail");
+
+      const result = addMapboxDetail(serpOutput);
+      console.log("add mapbox detail");
+      console.timeEnd("add mapbox detail");
+
       console.log("send details to local " + result.features.length);
       res.status(200).json({ result });
     } catch (err) {
@@ -126,7 +130,6 @@ const addMapboxDetail = async (data) => {
       },
     };
     geojsonFeatureObj = {};
-    console.log("goes after if statement");
 
     if (
       item.google.knowledge_graph &&
@@ -134,8 +137,6 @@ const addMapboxDetail = async (data) => {
       item.google.knowledge_graph.local_map.gps_coordinates &&
       item.google.knowledge_graph.local_map.gps_coordinates.longitude
     ) {
-      console.log("enter knowledge graph map1");
-
       place = {
         gps_coordinates: item.google.knowledge_graph.local_map.gps_coordinates,
         properties: {
@@ -197,8 +198,6 @@ const addMapboxDetail = async (data) => {
       item.google.local_results.places &&
       item.google.local_results.places[0]
     ) {
-      console.log("goes after if statement2");
-
       place = {
         gps_coordinates: item.google.local_results.places[0].gps_coordinates,
         properties: {
@@ -256,8 +255,6 @@ const addMapboxDetail = async (data) => {
         },
       };
     } else if (item.gmaps.local_results && item.gmaps.local_results[0]) {
-      console.log("goes after if statement3");
-
       place = {
         gps_coordinates: item.gmaps.local_results[0].gps_coordinates,
         properties: {
@@ -317,8 +314,6 @@ const addMapboxDetail = async (data) => {
         },
       };
     } else if (item.gmaps.place_results) {
-      console.log("goes after if statement4");
-
       place = {
         gps_coordinates: item.gmaps.place_results.gps_coordinates,
         properties: {
@@ -422,14 +417,12 @@ const addMapboxDetail = async (data) => {
     }
 
     geojsonFeatureCollectionObj.features.push(geojsonFeatureObj);
-
-    // insertPlace(db, geojsonFeatureObj).catch((err) => {
-    //   console.error(err);
-    //   process.exit(1);
-    // });
-
   }
   //   console.log(tempListArr);
+  insertPlace(db, geojsonFeatureObj).catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
   console.log(
     "in tempList last line" + geojsonFeatureCollectionObj.features.length
   );
@@ -437,62 +430,3 @@ const addMapboxDetail = async (data) => {
   //   console.log(tempListArr);
   return geojsonFeatureCollectionObj;
 };
-
-async function insertPlace(db, geojsonFeatureObj) {
-  const placeResult = await db.query(
-    sql`
-    INSERT INTO places (
-      longitude, 
-      latitude, 
-      title, 
-      type, 
-      description, 
-      price, 
-      rating, 
-      review_count, 
-      phone, 
-      address, 
-      time_spend, 
-      permanently_closed, 
-      time_created
-    ) 
-    VALUES (
-      ${geojsonFeatureObj.geometry.coordinates[1]}, 
-      ${geojsonFeatureObj.geometry.coordinates[0]}, 
-      ${geojsonFeatureObj.properties.title}, 
-      ${geojsonFeatureObj.properties.type}, 
-      ${geojsonFeatureObj.properties.description}, 
-      ${geojsonFeatureObj.properties.price}, 
-      ${geojsonFeatureObj.properties.rating}, 
-      ${geojsonFeatureObj.properties.reviewCount}, 
-      ${geojsonFeatureObj.properties.phone}, 
-      ${geojsonFeatureObj.properties.address}, 
-      ${null},
-      ${null}, 
-      NOW()) 
-    RETURNING id
-    `
-  );
-  geojsonFeatureObj.properties.timeSpend;
-  geojsonFeatureObj.properties.permanently_closed;
-  const placeId = placeResult.rows[0].id;
-
-  await db.query(
-    `
-          INSERT INTO externallinks (
-            place_id,
-            website,
-            googlemap,
-            time_created
-          )
-          VALUES ($1, $2, $3, NOW())
-          `,
-    [
-      placeId,
-      geojsonFeatureObj.properties.externalLinks.website, // replace with actual value
-      geojsonFeatureObj.properties.externalLinks.googlemap, // replace with actual value
-    ]
-  );
-
-  await db.dispose();
-}
