@@ -129,7 +129,7 @@ height: 50px;
     overflow: hidden;
   }
   input, select, textarea {
-    font-size: 16px;
+    font-size: 12px;
   }
   .title {
     font-size: 4rem;
