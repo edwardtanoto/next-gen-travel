@@ -236,10 +236,42 @@ export default function Home() {
             fontFamily: "Space Grotesk",
           }}
         >
-          <p>example videos</p>
-          <p>join waitlist</p>
-          <p>our community</p>
-          <p>changelogs</p>
+          <p>
+            <a
+              href="https://travelba.notion.site/example-tiktok-reels-videos-af1f8e17f1744598810db4b6ae91f2e2?pvs=4"
+              target="_blank"
+              className="link-group-content"
+            >
+              example videos
+            </a>
+          </p>
+          <p>
+            <a
+              href="https://airtable.com/appctyRzceyhU0pFf/shrOg7scx2zlq1YGz"
+              target="_blank"
+              className="link-group-content"
+            >
+              join waitlist
+            </a>
+          </p>
+          <p>
+            <a
+              href="https://travelba.notion.site/e921498e2b884f3e979c3bedaab92be6?v=6bae4287bb4b4553b953423eb1f59b15&pvs=4"
+              target="_blank"
+              className="link-group-content"
+            >
+              our community
+            </a>
+          </p>
+          <p>
+            <a
+              href="https://travelba.notion.site/changelogs-81b8b3fff2ab4c36a8cca609289d33ba?pvs=4"
+              target="_blank"
+              className="link-group-content"
+            >
+              changelogs
+            </a>
+          </p>
         </div>
         <div className="form-group">
           <form
