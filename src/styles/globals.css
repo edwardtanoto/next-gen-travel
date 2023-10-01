@@ -5,7 +5,7 @@
 }
 body {
   font-family: "Inter", "sans-serif";
-  background-image: url("../../public/group-vector.svg");
+  background-image: url("/group-vector.svg");
   background-position: right;
   background-size: cover;
   height: 100vh;
