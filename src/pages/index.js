@@ -148,7 +148,7 @@ export default function Home() {
         method: "GET",
         headers: {
           "X-RapidAPI-Key":
-            "5925a974a7msh8391ebb41b83c39p168aa2jsn2acfd9cb904f",
+            "456b9d753bmsh684626de7cfebc7p1d7469jsn2f4e9d178868",
           "X-RapidAPI-Host":
             "tiktok-download-video-no-watermark.p.rapidapi.com",
         },
@@ -158,7 +158,7 @@ export default function Home() {
         method: "GET",
         headers: {
           "X-RapidAPI-Key":
-            "5925a974a7msh8391ebb41b83c39p168aa2jsn2acfd9cb904f",
+            "456b9d753bmsh684626de7cfebc7p1d7469jsn2f4e9d178868",
           "X-RapidAPI-Host": "instagram-media-downloader.p.rapidapi.com",
         },
       };
@@ -186,7 +186,7 @@ export default function Home() {
         instagramResult = JSON.parse(instagramResult);
         console.log("ig ", instagramResult);
         whisperResult = await makePostRequest("/api/whisper", instagramResult);
-        ocrResult = await makePostRequest("/api/awsOcr", tiktokResult);
+        ocrResult = await makePostRequest("/api/awsOcr", instagramResult);
         text = whisperResult + instagramResult.caption + ocrResult;
       }
 
@@ -264,10 +264,6 @@ export default function Home() {
                 className="input-box"
               />
             </span>
-            <div>
-              <p id="outbox"></p>
-            </div>
-            {/* <input type="submit" className="submit-box" id="outbox" /> */}
           </form>
           <br />
           <br />
