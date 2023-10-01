@@ -14,17 +14,17 @@ export default async function handler(req, res) {
   let videoUrl;
   let videoKey;
   const isTiktok = req.body.hasOwnProperty("data");
-  const isInstagram = req.body.hasOwnProperty("video");
-  const random = [];
+  const isInstagram = req.body.hasOwnProperty("items");
   const bucketName = "next-travel-app";
 
   if (isTiktok) {
     videoKey = `video/${req.body.data.id}.mp4`;
     videoUrl = req.body.data.video_link_wm;
   } else if (isInstagram) {
-    const arr = req.body.video.split("/");
-    videoKey = `video/${arr[5]}.mp4`;
-    videoUrl = req.body.video;
+    videoKey = `video/${req.body.items[0].code}.mp4`;
+    videoUrl = req.body.items[0].video_versions[0].url;
+    console.log("video Key: ", videoKey);
+    console.log("video URL: ", videoUrl);
   } else return;
 
   console.log("Starting video upload ");

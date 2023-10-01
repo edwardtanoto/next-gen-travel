@@ -94,7 +94,7 @@ export default function Home() {
 
       const baseApiUrl = isTikTok
         ? "https://tiktok-download-video-no-watermark.p.rapidapi.com/tiktok/info"
-        : "https://instagram-media-downloader.p.rapidapi.com/rapid/post.php";
+        : "https://instagram-media-downloader.p.rapidapi.com/rapid/post_v2.php";
 
       const link = `${baseApiUrl}?url=${encodeURIComponent(data)}`;
 
@@ -175,19 +175,19 @@ export default function Home() {
         let tiktokResult = await response.text();
         tiktokResult = JSON.parse(tiktokResult);
         console.log("tr ", tiktokResult);
-        whisperResult = await makePostRequest("/api/whisper", tiktokResult);
+        whisperResult = makePostRequest("/api/whisper", tiktokResult);
         ocrResult = await makePostRequest("/api/awsOcr", tiktokResult);
         text = whisperResult + tiktokResult.data.desc + ocrResult;
       } else if (platform === "instagram") {
         console.log(link, options);
         const response = await fetch(link, options);
         console.log(options);
-        let instagramResult = await response.text();
-        instagramResult = JSON.parse(instagramResult);
+        let instagramResult = await response.json();
         console.log("ig ", instagramResult);
-        whisperResult = await makePostRequest("/api/whisper", instagramResult);
+        whisperResult = makePostRequest("/api/whisper", instagramResult);
         ocrResult = await makePostRequest("/api/awsOcr", instagramResult);
-        text = whisperResult + instagramResult.caption + ocrResult;
+        text =
+          whisperResult + instagramResult.items[0].caption.text + ocrResult;
       }
 
       // whisperResult =

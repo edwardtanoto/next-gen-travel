@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     if (req.body.hasOwnProperty("data")) {
       videoURL = req.body.data.video_link_wm;
     } else {
-      videoURL = req.body.video;
+      videoURL = req.body.items[0].video_versions[0].url;
     }
     console.log(videoURL);
     // body.data.video
