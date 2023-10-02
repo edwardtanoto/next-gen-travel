@@ -105,14 +105,12 @@ function Mapbox(props) {
       /* Assign the `item` class to each listing for styling. */
       listing.className = `${styles.item}`;
       let imagebox = listing.appendChild(document.createElement("div"));
-
-      if (store.properties.images) {
+      let images = JSON.parse(store.properties.images);
+      if (images) {
         console.log("images");
-        console.log(store.properties?.images);
+        console.log(images);
         imagebox.innerHTML = `<img style="border-radius: 30px" src=\"${
-          store.properties?.images[0]
-            ? store.properties.images[0]?.original
-            : ""
+          images[0] ? images[0]?.original : images.original
         }" width=\"100%\" height=\"200px\">`;
         imagebox.className = `${styles.imagebox}`;
       }
