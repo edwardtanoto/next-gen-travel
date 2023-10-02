@@ -71,24 +71,24 @@ async function insertPlace(db, geojsonFeatureObj) {
     //do not exist in db
     //queryId (tiktok or insta id)
     console.log(placeResult);
-    //   if (placeResult && placeResult[0]) {
-    //     const placeId = placeResult[0].id;
-    //     console.log(placeId);
-    //     await db.query(
-    //       sql`
-    //         INSERT INTO externallinks (
-    //           place_id,
-    //           website,
-    //           googlemap
-    //         )
-    //         VALUES (
-    //           ${placeId},
-    //           ${geojsonFeatureObj.properties.externalLinks.website},
-    //           ${geojsonFeatureObj.properties.externalLinks.googlemap}
-    //         )
-    //         `
-    //     );
-    //   }
+    if (placeResult && placeResult[0]) {
+      const placeId = placeResult[0].id;
+      console.log(placeId);
+      await db.query(
+        sql`
+            INSERT INTO externallinks (
+              place_id,
+              website,
+              googlemap
+            )
+            VALUES (
+              ${placeId},
+              ${geojsonFeatureObj.properties.externalLinks.website},
+              ${geojsonFeatureObj.properties.externalLinks.googlemap}
+            )
+            `
+      );
+    }
   } catch (err) {
     console.log(err);
   }

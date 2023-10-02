@@ -166,8 +166,8 @@ const extractPlaceInfo = (item) => {
       website: "https://tokyotoilet.jp/",
       googlemap: "https://maps.app.goo.gl/C1mUYhax4HZ2TbaRA",
     },
-    images: [
-      JSON.stringify({
+    images: JSON.stringify([
+      {
         link: "https://www.google.com/search?sca_esv=567173421&hl=en&gl=us&q=Kenting+National+Park&tbm=isch&source=univ&fir=TRANyNv-SaTTgM%252CFfNoJXJw15vZPM%252C_%253BSs6CBMLMsL67uM%252Ckm9iKFd9_ItasM%252C_%253BC8QKzv6c78YRUM%252CGbfma_-W7kjvAM%252C_%253BF6ViWuqXJH26FM%252C30hO5V1QXf6QAM%252C_%253BIahhoKt8T9GlpM%252CQP8IbO5jmGk_mM%252C_%253Bd98MAOrzL2C_TM%252CbVcCCeTEqYYjHM%252C_%253BPP-ybhfFFVONBM%252ClIeiir1hXgnUZM%252C_%253B9QXwRizLMOMYaM%252CTiVnqMpx0WozlM%252C_%253BgNdcjXF5F1-7fM%252Chc1Yij8oXR6-cM%252C_%253BV7qDfaEffrkKYM%252ChvQxDVf1AgfjCM%252C_&usg=AI4_-kTYwjbIzpn19n6J_hDbJp1yn4on1A&sa=X&ved=2ahUKEwi4gNeJ9LqBAxUtEFkFHV5-CA0Q9AF6BAgWEAA#imgrc=TRANyNv-SaTTgM",
         source:
           "https://taiwan-scene.com/a-first-timers-guide-to-kenting-national-park/",
@@ -177,8 +177,8 @@ const extractPlaceInfo = (item) => {
           "https://generative-placeholders.glitch.me/image?width=600&height=300&style=joy-division",
         title: "A First Timer's Guide to Kenting National Park - Taiwan Scene",
         source_name: "Taiwan Scene",
-      }),
-    ],
+      },
+    ]),
   };
 
   let placeInfo = null;
