@@ -138,6 +138,9 @@ height: 50px;
     margin-left: 0;
     margin-top: 40px;
   }
+  .input-box {
+    font-size: 16px;
+  }
   .link-group{
     position: absolute;
     margin-left: 0;

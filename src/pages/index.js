@@ -294,6 +294,7 @@ export default function Home() {
                   onSubmit(e.clipboardData.getData("Text"));
                   console.log(e.clipboardData.getData("Text"));
                 }}
+                disabled={loading}
                 className="input-box"
               />
             </span>
