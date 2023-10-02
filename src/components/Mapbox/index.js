@@ -104,9 +104,11 @@ function Mapbox(props) {
       listing.id = `listing-${store.properties.id}`;
       /* Assign the `item` class to each listing for styling. */
       listing.className = `${styles.item}`;
-      const imagebox = listing.appendChild(document.createElement("div"));
+      let imagebox = listing.appendChild(document.createElement("div"));
 
-      if (store.properties.images && store.properties.externalLinks.googlemap) {
+      if (store.properties.images) {
+        console.log("images");
+        console.log(store.properties?.images);
         imagebox.innerHTML = `<img style="border-radius: 30px" src=\"${
           store.properties?.images[0]
             ? store.properties.images[0]?.original
@@ -188,8 +190,8 @@ function Mapbox(props) {
       /* Assign a unique `id` to the marker. */
       el.id = `marker-${marker.properties.id}`;
       /* Assign the `marker` class to each marker for styling. */
-      console.log(data.marker);
-      console.log("emoji ", `${marker.properties.emojiType}`);
+      // console.log(data.marker);
+      // console.log("emoji ", `${marker.properties.emojiType}`);
       el.innerHTML += `${marker.properties.emojiType}`;
       el.style.cssText =
         "text-indent:17.5px;font-size: 20px;line-height: 35px;";
