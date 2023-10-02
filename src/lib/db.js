@@ -1,12 +1,33 @@
 const createConnectionPool = require("@databases/pg");
 const { sql } = require("@databases/pg");
-
 const db = createConnectionPool();
 
 async function insertPlace(db, geojsonFeatureObj) {
   console.log("in db");
   console.log(geojsonFeatureObj.geometry);
   console.log(geojsonFeatureObj.geometry.coordinates);
+  console.log(geojsonFeatureObj.properties.hours);
+  console.log("in db images");
+  console.log(geojsonFeatureObj.properties.title);
+  console.log(geojsonFeatureObj.properties.images);
+
+  // // Parse the JSON string into an object
+  // const data = JSON.parse(geojsonFeatureObj.properties.hours);
+
+  // // Function to replace non-breaking spaces and en-dashes
+  // function cleanUpString(str) {
+  //   return str.replace(/\u202F/g, " ").replace(/–/g, "-");
+  // }
+
+  // // Clean up all string values in the object
+  // const cleanedData = {};
+  // for (const [key, value] of Object.entries(data)) {
+  //   cleanedData[key] = cleanUpString(value);
+  // }
+
+  // // Stringify the cleaned data back into a JSON string
+  // const cleanedHours = JSON.stringify(cleanedData);
+
   try {
     const placeResult = await db.query(sql`
   INSERT INTO places (
@@ -22,6 +43,9 @@ async function insertPlace(db, geojsonFeatureObj) {
     address, 
     time_spend, 
     permanently_closed, 
+    emoji_type,
+    images,
+    hours,
     time_created
   ) 
   VALUES (
@@ -35,11 +59,17 @@ async function insertPlace(db, geojsonFeatureObj) {
     ${geojsonFeatureObj.properties.reviewCount}, 
     ${geojsonFeatureObj.properties.phone}, 
     ${geojsonFeatureObj.properties.address}, 
-    ${null},
-    ${null}, 
+    ${geojsonFeatureObj.properties.timeSpend},
+    ${geojsonFeatureObj.properties.permanently_closed},
+    ${geojsonFeatureObj.properties.emojiType},
+    ${geojsonFeatureObj.properties.images},
+    ${geojsonFeatureObj.properties.hours},
+
     NOW()) 
   RETURNING id
   `);
+    //do not exist in db
+    //queryId (tiktok or insta id)
     console.log(placeResult);
     //   if (placeResult && placeResult[0]) {
     //     const placeId = placeResult[0].id;
@@ -59,8 +89,6 @@ async function insertPlace(db, geojsonFeatureObj) {
     //         `
     //     );
     //   }
-
-    await db.dispose();
   } catch (err) {
     console.log(err);
   }
