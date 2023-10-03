@@ -134,9 +134,15 @@ export default function Home() {
 
     document.addEventListener("paste", handlePasteEvent);
     window.addEventListener("load", handlePasteEvent);
+    document
+      .getElementById("input-link")
+      .addEventListener("click", handlePasteEvent);
     return () => {
       document.removeEventListener("paste", handlePasteEvent);
       window.addEventListener("load", handlePasteEvent);
+      document
+        .getElementById("input-link")
+        .addEventListener("click", handlePasteEvent);
     };
   }, []);
 
@@ -288,6 +294,8 @@ export default function Home() {
                 />
               </span>
               <input
+                id="input-link"
+                style={{ fontSize: "16px" }}
                 placeholder="paste tiktok/reels link"
                 {...register("link", { required: true })}
                 onPaste={function (e) {
