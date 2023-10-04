@@ -134,15 +134,9 @@ export default function Home() {
 
     document.addEventListener("paste", handlePasteEvent);
     window.addEventListener("load", handlePasteEvent);
-    document
-      .getElementById("input-link")
-      .addEventListener("click", handlePasteEvent);
     return () => {
       document.removeEventListener("paste", handlePasteEvent);
       window.addEventListener("load", handlePasteEvent);
-      document
-        .getElementById("input-link")
-        .addEventListener("click", handlePasteEvent);
     };
   }, []);
 

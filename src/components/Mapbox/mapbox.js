@@ -18,16 +18,11 @@ function Mapbox(props) {
   const [destinationLength, setDestinationLength] = useState(0);
 
   useEffect(() => {
-    console.log(
-      "mapbox props ",
-      `${typeof JSON.parse(props.router.query.location.replace(/'/g, '"'))}`
-    );
+    localStorage.setItem("path", props.router.query.location);
+    const path = localStorage.getItem("path");
     const fetchSerp = async () => {
       try {
-        const serpResult = await makePostRequest(
-          "/api/serp",
-          `${props.router.query.location}`
-        );
+        const serpResult = await makePostRequest("/api/serp", `${path}`);
         console.log("sr length ", serpResult.result.length);
         return serpResult.result;
       } catch (error) {
