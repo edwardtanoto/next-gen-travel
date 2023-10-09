@@ -5,6 +5,12 @@ import mapboxgl from "mapbox-gl"; // eslint-disable-line import/no-webpack-loade
 import styles from "../../styles/mapbox.module.css";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { makePostRequest } from "../../lib/api";
+import {
+  BrowserView,
+  MobileView,
+  isBrowser,
+  isMobile,
+} from "react-device-detect";
 
 //Mapbox API Token
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
@@ -20,6 +26,7 @@ function Mapbox(props) {
   useEffect(() => {
     localStorage.setItem("path", props.router.query.location);
     const path = localStorage.getItem("path");
+
     const fetchSerp = async () => {
       try {
         const serpResult = await makePostRequest("/api/serp", `${path}`);
@@ -37,7 +44,9 @@ function Mapbox(props) {
       center: [lng, lat],
       zoom: zoom,
     });
-
+    map.current.on("idle", () => {
+      map.current.resize();
+    });
     map.current.on("move", () => {
       setLng(map.current.getCenter().lng.toFixed(4));
       setLat(map.current.getCenter().lat.toFixed(4));
@@ -59,8 +68,9 @@ function Mapbox(props) {
       serpResult.features.forEach(function (store, i) {
         store.properties.id = i;
       });
-
-      buildLocationList(serpResult);
+      isMobile
+        ? buildLocationListMobile(serpResult)
+        : buildLocationList(serpResult);
       addMarkers(serpResult);
     });
   });
@@ -90,6 +100,68 @@ function Mapbox(props) {
     popup.addClassName(`${styles["mapboxgl-popup"]}`);
   }
 
+  function buildLocationListMobile(stores) {
+    for (const store of stores.features) {
+      /* Add a new listing section to the sidebar. */
+      const listings = document.getElementById("listings");
+      const listing = listings.appendChild(document.createElement("div"));
+      /* Assign a unique `id` to the listing. */
+      listing.id = `listing-${store.properties.id}`;
+      /* Assign the `item` class to each listing for styling. */
+      listing.className = `${styles.item}`;
+      /* Check is mobile */
+      let imagebox = listing.appendChild(document.createElement("div"));
+      imagebox.href = "#";
+      let images = JSON.parse(store.properties.images);
+      if (images) {
+        console.log("images");
+        console.log(images);
+        imagebox.innerHTML = `<div class="imagebox" 
+          style="background-size:cover;
+          background-position:center;
+          border-radius:30px;
+          height:200px;
+          background-image:url(${
+            images[0] ? images[0]?.original : images.original
+          });">
+        <a href="#" class=\"${styles.title}\" id="link-${store.properties.id}">
+        ${store.properties.title}</a>
+        </div>`;
+        //imagebox.className = `${styles.imagebox}`;
+      }
+
+      /* Add the link to the individual listing created above. */
+      const link = listing.appendChild(document.createElement("a"));
+      link.href = "#";
+      link.className = `${styles.title}`;
+      link.id = `link-${store.properties.id}`;
+      link.innerHTML = `${store.properties.title}`;
+
+      /* Add details to the individual listing. */
+      // const details = listing.appendChild(document.createElement("div"));
+      // details.className = `${styles.itemdetails}`;
+      // details.innerHTML = `${store.properties.city} · `;
+
+      document
+        .querySelector(".imagebox")
+        .addEventListener("mouseover", function () {
+          for (const feature of stores.features) {
+            if (this.id === `link-${feature.properties.id}`) {
+              flyToStore(feature);
+              createPopUp(feature);
+            }
+          }
+          const activeItem = document.getElementsByClassName(
+            `${styles.active}`
+          );
+          if (activeItem[0]) {
+            activeItem[0].classList.remove(`${styles.active}`);
+          }
+          this.parentNode.classList.add(`${styles.active}`);
+        });
+    }
+  }
+
   function buildLocationList(stores) {
     for (const store of stores.features) {
       /* Add a new listing section to the sidebar. */
@@ -99,6 +171,7 @@ function Mapbox(props) {
       listing.id = `listing-${store.properties.id}`;
       /* Assign the `item` class to each listing for styling. */
       listing.className = `${styles.item}`;
+      /* Check is mobile */
       let imagebox = listing.appendChild(document.createElement("div"));
       let images = JSON.parse(store.properties.images);
       if (images) {
@@ -205,6 +278,9 @@ function Mapbox(props) {
         const listing = document.getElementById(
           `listing-${marker.properties.id}`
         );
+        listing.scrollIntoView({
+          behavior: "smooth",
+        });
         listing.classList.add(`${styles.active}`);
       });
       /**
@@ -221,7 +297,9 @@ function Mapbox(props) {
     <div className={styles.mapbox}>
       <div className={styles.sidebar}>
         <div className={styles.heading}>
+          <p> </p>
           <p>{destinationLength} destinations</p>
+          <img src="/logo/Share.svg" width={"16px"} height={"16px"} />
         </div>
         <div id="listings" className={styles.listings}></div>
       </div>

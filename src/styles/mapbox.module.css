@@ -22,18 +22,22 @@
   /* right: 25%; */
   right: 0;
   height: 100%;
-  width: 100vh;
+  width: 100%;
   top: 0;
   bottom: 0;
 }
 
 .heading {
-  font-family: "DM Sans", sans-serif;
+  display: flex;
+  font-family: "Space Grotesk", sans-serif;
   text-align: center;
   font-weight: bold;
   padding-top: 4px;
   height: 60px;
   color: black;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
 }
 
 .listings {
@@ -57,7 +61,7 @@
   width: 350px;
   background-color: white;
   border-radius: 30px;
-  font-family: "DM Sans", sans-serif;
+  font-family: "Space Grotesk", sans-serif;
   font-weight: lighter;
   cursor: pointer;
   opacity: 0.5;
@@ -75,7 +79,7 @@
 .listings .item .title {
   display: block;
   color: black;
-  font-family: "DM Sans", sans-serif;
+  font-family: "Space Grotesk", sans-serif;
   font-weight: bold;
 }
 
@@ -168,7 +172,7 @@
   .sidebar {
     position: fixed;
     width: 100%;
-    height: 60px;
+    height: 45px;
     bottom: 0;
     overflow: auto;
     border-radius: 16px 16px 0rem 0rem;
@@ -178,11 +182,19 @@
     z-index: 2;
     transition: ease-in 0.2s;
   }
+  .heading {
+    font-family: "Space Grotesk", sans-serif;
+    text-align: center;
+    font-weight: bold;
+    padding-top: 4px;
+    height: 45px;
+    color: black;
+  }
 
   .sidebar:hover {
     position: fixed;
     width: 100%;
-    height: 60%;
+    height: 40%;
     bottom: 0;
     overflow: auto;
     border-radius: 16px 16px 0rem 0rem;
@@ -198,9 +210,21 @@
     /* right: 25%; */
     right: 0;
     width: 100%;
-    height: 100vh;
+    height: 100%;
     top: 0;
     bottom: 0;
     transition: ease-in 0.2s;
   }
+ 
+  /* #link-0 {
+    font-size: 20px;
+    font-weight: 700;
+    left: 20px;
+    letter-spacing: 1px;
+    line-height: 34px;
+    position: absolute;
+    top: 15px;
+    white-space: nowrap;
+    width: 102px;
+  } */
 }
