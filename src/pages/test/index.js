@@ -65,14 +65,21 @@ const Test = () => {
         },
       };
 
-      const ocrResult = await makePostRequest(
-        `${process.env.URL}/api/awsOcr`,
-        tiktokResult
-      );
-      console.log(ocrResult);
+      const queryObj = {
+        link_id: "test2",
+      };
 
-      console.log(openAIResult.choices[0].message.content);
-      return openAIResult.choices[0].message.content;
+      const ocrResult = await makePostRequest("/api/queryVideoId", queryObj);
+      console.log("ocrResult.id");
+
+      console.log(ocrResult);
+      const places = await makePostRequest("/api/queryPlacesfromQId", {
+        id: ocrResult.id,
+      });
+      console.log(places);
+
+      // console.log(openAIResult.choices[0].message.content);
+      // return openAIResult.choices[0].message.content;
     } catch (error) {
       console.error(error);
     }

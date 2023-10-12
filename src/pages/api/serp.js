@@ -58,7 +58,7 @@ export default async function handler(req, res) {
 
   try {
     console.time("serp");
-    // const serpOutput = await getMultiSerpResult(req.body);
+    // const serpOutput = await getMultiSerpResult(req.body.location);
     console.log("serp");
     console.timeEnd("serp");
     console.log("Google2");
@@ -66,7 +66,7 @@ export default async function handler(req, res) {
 
     console.log(serpOutput.length);
     console.time("add mapbox detail");
-    const result = await addMapboxDetail(serpOutput);
+    const result = await addMapboxDetail(serpOutput, req.body.queryId);
     console.log("add mapbox detail");
     console.timeEnd("add mapbox detail");
 
@@ -87,7 +87,7 @@ const matchEmoji = async (title, desc) => {
 };
 
 // Add detailed information from Mapbox
-const addMapboxDetail = async (data) => {
+const addMapboxDetail = async (data, queryId) => {
   // the callback. Use a better name
   console.log("test in add mapbox detail first line " + data.length);
 
@@ -127,7 +127,7 @@ const addMapboxDetail = async (data) => {
     console.log("feature collection");
     console.log(featureCollection);
     console.log(featureCollection.features);
-    await insertPlace(db, feature).catch((err) => {
+    await insertPlace(db, feature, queryId).catch((err) => {
       console.error(err);
       process.exit(1);
     });
@@ -150,13 +150,34 @@ const extractPlaceInfo = (item) => {
     rating: 4.5,
     reviewCount: 123,
     hours: JSON.stringify({
-      thursday: "10 AM–6 PM",
-      friday: "10 AM–6 PM",
-      saturday: "10 AM–6 PM",
-      sunday: "10 AM–6 PM",
-      monday: "Closed",
-      tuesday: "10 AM–6 PM",
-      wednesday: "10 AM–6 PM",
+      friday: {
+        opens: "8 AM",
+        closes: "5 PM",
+      },
+      monday: {
+        opens: "Closed",
+        closes: "Closed",
+      },
+      sunday: {
+        opens: "8 AM",
+        closes: "5 PM",
+      },
+      tuesday: {
+        opens: "8 AM",
+        closes: "5 PM",
+      },
+      saturday: {
+        opens: "8 AM",
+        closes: "5 PM",
+      },
+      thursday: {
+        opens: "8 AM",
+        closes: "5 PM",
+      },
+      wednesday: {
+        opens: "8 AM",
+        closes: "5 PM",
+      },
     }),
     phone: "+1 234-567-8901",
     address: "123 Main St, Cityville, State, 12345",

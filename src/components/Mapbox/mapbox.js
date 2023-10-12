@@ -5,6 +5,7 @@ import mapboxgl from "mapbox-gl"; // eslint-disable-line import/no-webpack-loade
 import styles from "../../styles/mapbox.module.css";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { makePostRequest } from "../../lib/api";
+import { db, getPlacesByQueryId } from ("./../../lib/db");
 
 //Mapbox API Token
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
@@ -24,10 +25,10 @@ function Mapbox(props) {
     );
     const fetchSerp = async () => {
       try {
-        const serpResult = await makePostRequest(
-          "/api/serp",
-          `${props.router.query.location}`
-        );
+        const serpResult = await makePostRequest("/api/serp", {
+          location: props.router.query.location,
+          queryId: props.router.query.queryId,
+        });
         console.log("sr length ", serpResult.result.length);
         return serpResult.result;
       } catch (error) {
@@ -57,17 +58,34 @@ function Mapbox(props) {
       });
     });
 
-    fetchSerp().then((serpResult) => {
-      console.log(serpResult);
-      console.log(serpResult.features);
-      setDestinationLength(serpResult.features.length);
-      serpResult.features.forEach(function (store, i) {
-        store.properties.id = i;
-      });
+    //get location serp or get from db
+    if (props.router.query.exist == "exist") {
+      //and turn it into geojson obj
+      const featureCollection = {
+        type: "FeatureCollection",
+        features: [],
+      };
+      let location = props.router.query.location;
 
-      buildLocationList(serpResult);
-      addMarkers(serpResult);
-    });
+      location.forEach((item) => {
+        featureCollection.features.push(item);
+      });
+      setDestinationLength(featureCollection.features.length);
+      buildLocationList(featureCollection);
+      addMarkers(featureCollection);
+    } else {
+      fetchSerp().then((serpResult) => {
+        console.log(serpResult);
+        console.log(serpResult.features);
+        setDestinationLength(serpResult.features.length);
+        serpResult.features.forEach(function (store, i) {
+          store.properties.id = i;
+        });
+
+        buildLocationList(serpResult);
+        addMarkers(serpResult);
+      });
+    }
   });
 
   function flyToStore(currentFeature) {
