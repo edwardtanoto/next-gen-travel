@@ -5,12 +5,7 @@ import mapboxgl from "mapbox-gl"; // eslint-disable-line import/no-webpack-loade
 import styles from "../../styles/mapbox.module.css";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { makePostRequest } from "../../lib/api";
-import {
-  BrowserView,
-  MobileView,
-  isBrowser,
-  isMobile,
-} from "react-device-detect";
+import { isMobile } from "react-device-detect";
 
 //Mapbox API Token
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
@@ -18,6 +13,7 @@ mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 function Mapbox(props) {
   const mapContainer = useRef(null);
   const map = useRef(null);
+  const [toggleDetail, setToggleDetail] = useState(false);
   const [lng, setLng] = useState(-122.2679252);
   const [lat, setLat] = useState(37.5593266);
   const [zoom, setZoom] = useState(7);
@@ -73,7 +69,7 @@ function Mapbox(props) {
         : buildLocationList(serpResult);
       addMarkers(serpResult);
     });
-  });
+  }, [toggleDetail]);
 
   function flyToStore(currentFeature) {
     map.current.flyTo({
@@ -138,9 +134,48 @@ function Mapbox(props) {
       link.innerHTML = `${store.properties.title}`;
 
       /* Add details to the individual listing. */
-      // const details = listing.appendChild(document.createElement("div"));
-      // details.className = `${styles.itemdetails}`;
-      // details.innerHTML = `${store.properties.city} · `;
+      if (toggleDetail) {
+        const details = listing.appendChild(document.createElement("div"));
+        details.className = `${styles.itemdetails}`;
+        details.innerHTML = `${store.properties.city} · `;
+        if (store.properties.permanently_closed) {
+          details.innerHTML += `<div>This place is permanently closed!!!</div>`;
+        } else {
+          if (store.properties.distance) {
+            const roundedDistance =
+              Math.round(store.properties.distance * 100) / 100;
+            details.innerHTML += `<div><strong>${roundedDistance} miles away</strong></div>`;
+          }
+          if (store.properties.externalLinks.website) {
+            details.innerHTML += `<a style="text-decoration:none;" href=${store.properties.externalLinks.website}><img width="18px" height="18px" src="/logo/Globe.svg"/></a>&nbsp;`;
+          }
+          if (store.properties.externalLinks.googlemap) {
+            details.innerHTML += `<a style="text-decoration:none" href=${store.properties.externalLinks.googlemap}><img width="18px" height="18px" src="/logo/Map.svg"/></a>`;
+          }
+          // if (store.properties.type) {
+          //   details.innerHTML += `<div>${store.properties.type}</div>`;
+          // }
+          if (store.properties.description) {
+            details.innerHTML += `<div>${store.properties.description}</div>`;
+          }
+          if (store.properties.price) {
+            details.innerHTML += `<div><strong>${store.properties.price}</strong></div>`;
+          }
+          if (store.properties.rating && store.properties.reviewCount) {
+            details.innerHTML += `<div><strong>${store.properties.rating} ⭐️ (${store.properties.reviewCount})</strong></div>`;
+          }
+          // if (store.properties.address) {
+          //   details.innerHTML += `<div><strong>${store.properties.address}</strong></div>`;
+          // }
+          if (store.properties.timeSpend) {
+            details.innerHTML += `<div><strong>People normally spend ${store.properties.timeSpend}</strong></div>`;
+          }
+
+          if (store.properties.phone) {
+            details.innerHTML += `${store.properties.phone}`;
+          }
+        }
+      }
 
       document
         .querySelector(".imagebox")
@@ -248,6 +283,10 @@ function Mapbox(props) {
     }
   }
 
+  useEffect(() => {
+    console.log(toggleDetail);
+  }, [toggleDetail]);
+
   function addMarkers(data) {
     /* For each feature in the GeoJSON object above: */
     for (const marker of data.features) {
@@ -280,6 +319,8 @@ function Mapbox(props) {
         );
         listing.scrollIntoView({
           behavior: "smooth",
+          block: "start",
+          inline: "center",
         });
         listing.classList.add(`${styles.active}`);
       });
@@ -301,7 +342,13 @@ function Mapbox(props) {
           <p>{destinationLength} destinations</p>
           <img src="/logo/Share.svg" width={"16px"} height={"16px"} />
         </div>
-        <div id="listings" className={styles.listings}></div>
+        <div
+          id="listings"
+          onClick={() => {
+            setToggleDetail((toggleDetail) => !toggleDetail);
+          }}
+          className={styles.listings}
+        ></div>
       </div>
       <div ref={mapContainer} className={styles.map}></div>
     </div>
