@@ -278,7 +278,7 @@ function Mapbox(props) {
         </div>
 
         {toggleDetail && (
-          <div id="details-view" style={{ height: "600px" }}>
+          <div id="details-view" style={{ height: "750px" }}>
             {/* {
               (document.getElementById(
                 `listing-${details[toggleIndex].properties.id}`
@@ -288,7 +288,7 @@ function Mapbox(props) {
               width="100%"
               height="200px"
               style={{
-                borderRadius: "16px 16px 0rem 0rem",
+                borderRadius: "16px",
               }}
               onClick={() => {
                 setToggleDetail((toggleDetail) => !toggleDetail);
@@ -311,7 +311,9 @@ function Mapbox(props) {
               </h1>
               <p>
                 {details[toggleIndex].properties.emojiType}{" "}
-                {details[toggleIndex].properties.type}
+                {Array.isArray(details[toggleIndex].properties.type)
+                  ? details[toggleIndex].properties.type[0]
+                  : details[toggleIndex].properties.type}
               </p>
               <div class="detail-logo-container">
                 <span class="group">
