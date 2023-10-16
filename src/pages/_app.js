@@ -3,6 +3,21 @@ import Layout from "../components/Layout";
 import "mapbox-gl/dist/mapbox-gl.css";
 import Head from "next/head";
 
+import posthog from "posthog-js";
+import { PostHogProvider } from "posthog-js/react";
+
+// Check that PostHog is client-side (used to handle Next.js SSR)
+if (typeof window !== "undefined") {
+  posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
+    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://app.posthog.com",
+    // Enable debug mode in development
+    loaded: (posthog) => {
+      if (process.env.NODE_ENV === "development") posthog.debug();
+    },
+    capture_pageview: false, // Disable automatic pageview capture, as we capture manually
+  });
+}
+
 function MyApp({ Component, pageProps }) {
   return (
     <>
@@ -121,7 +136,9 @@ function MyApp({ Component, pageProps }) {
         />
       </Head>
       <Layout>
-        <Component {...pageProps} />
+        <PostHogProvider client={posthog}>
+          <Component {...pageProps} />
+        </PostHogProvider>
       </Layout>
     </>
   );

@@ -2,7 +2,7 @@
 
 /* The page is split between map and sidebar - the sidebar gets 1/3, map
   gets 2/3 of the page. You can adjust this to your personal liking. */
-.sidebar {
+.sidebar, .sidebar_detail {
   position: absolute;
   width: 30%;
   height: 100%;
@@ -28,12 +28,16 @@
 }
 
 .heading {
-  font-family: "DM Sans", sans-serif;
+  display: flex;
+  font-family: "Space Grotesk", sans-serif;
   text-align: center;
   font-weight: bold;
   padding-top: 4px;
   height: 60px;
   color: black;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
 }
 
 .listings {
@@ -42,6 +46,7 @@
   width: 100%;
   overflow: auto;
   margin-top: 8px;
+  z-index: 0;
   padding-bottom: 60px;
   display: flex;
   flex-direction: column;
@@ -57,7 +62,7 @@
   width: 350px;
   background-color: white;
   border-radius: 30px;
-  font-family: "DM Sans", sans-serif;
+  font-family: "Space Grotesk", sans-serif;
   font-weight: lighter;
   cursor: pointer;
   opacity: 0.5;
@@ -75,7 +80,7 @@
 .listings .item .title {
   display: block;
   color: black;
-  font-family: "DM Sans", sans-serif;
+  font-family: "Space Grotesk", sans-serif;
   font-weight: bold;
 }
 
@@ -163,12 +168,29 @@
   padding: 0;
   -webkit-font-smoothing: antialiased;
 }
+  .detail-logo-container .group {
+  position: fixed;
+  width: 26px;
+  height: 26px;
+  top: 0;
+  left: 0;
+  background-color: #ffffff;
+  border-radius: 13px/13.04px;
+  box-shadow: 2px 2px 4px #0000004c;
+  }
+  .detail-logo-container .world-net {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  top: 6px;
+  left: 6px;
+  }
 
 @media only screen and (max-width: 600px) {
   .sidebar {
     position: fixed;
     width: 100%;
-    height: 60px;
+    height: 45px;
     bottom: 0;
     overflow: auto;
     border-radius: 16px 16px 0rem 0rem;
@@ -178,11 +200,32 @@
     z-index: 2;
     transition: ease-in 0.2s;
   }
+  .heading {
+    font-family: "Space Grotesk", sans-serif;
+    text-align: center;
+    font-weight: bold;
+    padding-top: 4px;
+    height: 45px;
+    color: black;
+  }
 
   .sidebar:hover {
     position: fixed;
     width: 100%;
-    height: 60%;
+    height: 40%;
+    bottom: 0;
+    overflow: auto;
+    border-radius: 16px 16px 0rem 0rem;
+    border: 1px solid #fff;
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(13.600000381469727px);
+    z-index: 2;
+  }
+
+  .sidebar_detail:hover {
+    position: fixed;
+    width: 100%;
+    height: 80%;
     bottom: 0;
     overflow: auto;
     border-radius: 16px 16px 0rem 0rem;
@@ -203,4 +246,18 @@
     bottom: 0;
     transition: ease-in 0.2s;
   }
+
+  
+
+  /* #link-0 {
+    font-size: 20px;
+    font-weight: 700;
+    left: 20px;
+    letter-spacing: 1px;
+    line-height: 34px;
+    position: absolute;
+    top: 15px;
+    white-space: nowrap;
+    width: 102px;
+  } */
 }

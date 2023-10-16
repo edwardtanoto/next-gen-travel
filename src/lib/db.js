@@ -1,12 +1,12 @@
 const createConnectionPool = require("@databases/pg");
 const { sql } = require("@databases/pg");
-
 const db = createConnectionPool();
 
-async function insertPlace(db, geojsonFeatureObj) {
-  console.log("in db");
-  console.log(geojsonFeatureObj.geometry);
-  console.log(geojsonFeatureObj.geometry.coordinates);
+async function insertPlace(db, geojsonFeatureObj, query_id) {
+  console.log("in db images");
+  console.log(geojsonFeatureObj.properties.title);
+  console.log(geojsonFeatureObj.properties.images);
+
   try {
     const placeResult = await db.query(sql`
   INSERT INTO places (
@@ -22,6 +22,10 @@ async function insertPlace(db, geojsonFeatureObj) {
     address, 
     time_spend, 
     permanently_closed, 
+    emoji_type,
+    images,
+    hours,
+    query_id,
     time_created
   ) 
   VALUES (
@@ -35,35 +39,106 @@ async function insertPlace(db, geojsonFeatureObj) {
     ${geojsonFeatureObj.properties.reviewCount}, 
     ${geojsonFeatureObj.properties.phone}, 
     ${geojsonFeatureObj.properties.address}, 
-    ${null},
-    ${null}, 
+    ${geojsonFeatureObj.properties.timeSpend},
+    ${geojsonFeatureObj.properties.permanently_closed},
+    ${geojsonFeatureObj.properties.emojiType},
+    ${geojsonFeatureObj.properties.images},
+    ${geojsonFeatureObj.properties.hours},
+    ${query_id},
     NOW()) 
   RETURNING id
   `);
+    //do not exist in db
+    //queryId (tiktok or insta id)
     console.log(placeResult);
-    //   if (placeResult && placeResult[0]) {
-    //     const placeId = placeResult[0].id;
-    //     console.log(placeId);
-    //     await db.query(
-    //       sql`
-    //         INSERT INTO externallinks (
-    //           place_id,
-    //           website,
-    //           googlemap
-    //         )
-    //         VALUES (
-    //           ${placeId},
-    //           ${geojsonFeatureObj.properties.externalLinks.website},
-    //           ${geojsonFeatureObj.properties.externalLinks.googlemap}
-    //         )
-    //         `
-    //     );
-    //   }
-
-    await db.dispose();
+    if (placeResult && placeResult[0]) {
+      const placeId = placeResult[0].id;
+      console.log(placeId);
+      await db.query(
+        sql`
+            INSERT INTO externallinks (
+              place_id,
+              website,
+              googlemap,
+              time_created
+            )
+            VALUES (
+              ${placeId},
+              ${geojsonFeatureObj.properties.externalLinks.website},
+              ${geojsonFeatureObj.properties.externalLinks.googlemap},
+              NOW()
+            )
+            `
+      );
+    }
   } catch (err) {
     console.log(err);
   }
+}
+
+async function getQueryIdFromLinkId(db, queryObj) {
+  // Check if link_id already exists
+  const existingLink = await db.query(sql`
+    SELECT id FROM query WHERE link_id = ${queryObj.link_id}
+  `);
+  console.log(existingLink);
+
+  if (existingLink.length > 0) {
+    console.log("link_id already exists");
+    return { query_id: existingLink[0].id, exist: "exist" };
+  }
+
+  const queryResult = await db.query(sql`
+  INSERT INTO query (
+    link_id,
+    url,
+    time_created
+  ) 
+  VALUES (
+    ${queryObj.link_id}, 
+    ${queryObj.url}, 
+    NOW()
+  ) 
+  RETURNING id
+  `);
+  console.log("link_id doesnot exist");
+
+  console.log(queryResult);
+
+  return { query_id: queryResult, exist: "new" };
+}
+
+async function getPlacesByQueryId(db, query_id) {
+  const places = await db.query(sql`
+    SELECT 
+      longitude, 
+      latitude, 
+      title, 
+      type, 
+      description, 
+      price, 
+      rating, 
+      review_count, 
+      phone, 
+      address, 
+      time_spend, 
+      permanently_closed, 
+      emoji_type,
+      images,
+      hours,
+      query_id,
+      time_created 
+    FROM places 
+    WHERE query_id = ${query_id}
+  `);
+
+  if (places.rowCount === 0) {
+    console.log("No places found for the provided query_id");
+    return [];
+  }
+
+  console.log("Places found:", places.rows);
+  return places.rows;
 }
 
 async function getPlaceDetails(placeId) {
@@ -104,4 +179,10 @@ async function getPlaceDetails(placeId) {
 //     console.error("Error:", error);
 //   });
 
-module.exports = { db, insertPlace, getPlaceDetails };
+module.exports = {
+  db,
+  insertPlace,
+  getPlaceDetails,
+  getQueryIdFromLinkId,
+  getPlacesByQueryId,
+};
