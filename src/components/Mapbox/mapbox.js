@@ -8,6 +8,7 @@ import { makePostRequest } from "../../lib/api";
 import { isMobile } from "react-device-detect";
 import posthog from "posthog-js";
 
+
 //Mapbox API Token
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
@@ -22,13 +23,25 @@ function Mapbox(props) {
   const [details, setDetails] = useState([]);
   const [destinationLength, setDestinationLength] = useState(0);
 
+  const callExistLoction = async () => {
+    const places = await makePostRequest("/api/queryPlacesfromQId", {
+      id: props.router.query.location,
+    });
+    console.log(places);
+    return places;
+  };
+
   useEffect(() => {
     localStorage.setItem("path", props.router.query.location);
     const path = localStorage.getItem("path");
 
+    console.log(props.router.query);
     const fetchSerp = async () => {
       try {
-        const serpResult = await makePostRequest("/api/serp", `${path}`);
+        const serpResult = await makePostRequest("/api/serp", {
+          location: `${path}`, //props.router.query.location
+          queryId: props.router.query.queryId,
+        });
         console.log("sr length ", serpResult.result.length);
         return serpResult.result;
       } catch (error) {
@@ -60,17 +73,37 @@ function Mapbox(props) {
       });
     });
 
-    fetchSerp().then((serpResult) => {
-      console.log(serpResult);
-      console.log(serpResult.features);
-      setDestinationLength(serpResult.features.length);
-      serpResult.features.forEach(function (store, i) {
-        store.properties.id = i;
+    //get location serp or get from db
+    if (props.router.query.exist == "exist") {
+      //and turn it into geojson obj
+      callExistLoction().then((featureCollection) => {
+        console.log(featureCollection);
+        setDestinationLength(featureCollection.features.length);
+        featureCollection.features.forEach(function (store, i) {
+          store.properties.id = i;
+        });
+        buildLocationList(featureCollection);
+        addMarkers(featureCollection);
       });
-      buildLocationList(serpResult);
-      addMarkers(serpResult);
-    });
-  }, []);
+    } else {
+      fetchSerp().then((serpResult) => {
+        setSerpResult(serpResult);
+        console.log(serpResult);
+        console.log(serpResult.features);
+        setDestinationLength(serpResult.features.length);
+
+        buildLocationList(serpResult);
+        addMarkers(serpResult);
+      });
+      // if (props.router.query.exist == "exist") {
+
+      //   setSerpResult(places);
+      //   console.log(serpResult);
+      // } else {
+
+      // }
+    }
+  });
 
   function flyToStore(currentFeature) {
     map.current.flyTo({

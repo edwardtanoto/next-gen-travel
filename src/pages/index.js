@@ -14,6 +14,9 @@ export default function Home() {
   const { push } = useRouter();
 
   const [locations, setLocations] = useState([]);
+  const [queryID, setQueryID] = useState();
+  const [queryExist, setQueryExist] = useState();
+
   const [inputPlatform, setInputPlatform] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -143,64 +146,96 @@ export default function Home() {
 
   const fetchFromSocial = async (link, platform) => {
     console.log("in fetech");
-    // console.log("fetchTiktok ", link);
-    // let options;
-    // if (platform === "tiktok") {
-    //   options = {
-    //     method: "GET",
-    //     headers: {
-    //       "X-RapidAPI-Key":
-    //         "456b9d753bmsh684626de7cfebc7p1d7469jsn2f4e9d178868",
-    //       "X-RapidAPI-Host":
-    //         "tiktok-download-video-no-watermark.p.rapidapi.com",
-    //     },
-    //   };
-    // } else if (platform === "instagram") {
-    //   options = {
-    //     method: "GET",
-    //     headers: {
-    //       "X-RapidAPI-Key":
-    //         "456b9d753bmsh684626de7cfebc7p1d7469jsn2f4e9d178868",
-    //       "X-RapidAPI-Host": "instagram-media-downloader.p.rapidapi.com",
-    //     },
-    //   };
-    // }
+    console.log("fetchTiktok ", link);
+    let options;
+    if (platform === "tiktok") {
+      options = {
+        method: "GET",
+        headers: {
+          "X-RapidAPI-Key":
+            "456b9d753bmsh684626de7cfebc7p1d7469jsn2f4e9d178868",
+          "X-RapidAPI-Host":
+            "tiktok-download-video-no-watermark.p.rapidapi.com",
+        },
+      };
+    } else if (platform === "instagram") {
+      options = {
+        method: "GET",
+        headers: {
+          "X-RapidAPI-Key":
+            "456b9d753bmsh684626de7cfebc7p1d7469jsn2f4e9d178868",
+          "X-RapidAPI-Host": "instagram-media-downloader.p.rapidapi.com",
+        },
+      };
+    }
 
     try {
       setLoading(true);
       setInputPlatform("rolling.gif");
-      // let whisperResult;
-      // let text;
-      // let ocrResult;
-      // if (platform === "tiktok") {
-      //   const response = await fetch(link, options);
-      //   let tiktokResult = await response.text();
-      //   tiktokResult = JSON.parse(tiktokResult);
-      //   console.log("tr ", tiktokResult);
-      //   whisperResult = makePostRequest("/api/whisper", tiktokResult);
-      //   ocrResult = await makePostRequest("/api/awsOcr", tiktokResult);
-      //   text = whisperResult + tiktokResult.data.desc + ocrResult;
-      // } else if (platform === "instagram") {
-      //   console.log(link, options);
-      //   const response = await fetch(link, options);
-      //   console.log(options);
-      //   let instagramResult = await response.json();
-      //   console.log("ig ", instagramResult);
-      //   whisperResult = makePostRequest("/api/whisper", instagramResult);
-      //   ocrResult = await makePostRequest("/api/awsOcr", instagramResult);
-      //   text =
-      //     whisperResult + instagramResult.items[0].caption.text + ocrResult;
-      // }
+      let whisperResult;
+      let text;
+      let ocrResult;
+      let result;
+      let queryObj;
+      let caption;
+      let locationResult;
+      if (platform === "tiktok") {
+        const response = await fetch(link, options);
+        result = await response.text();
+        result = JSON.parse(result);
+        console.log("tr ", result);
+        queryObj = { link_id: result.data.id, url: result.data.video_link_wm };
 
-      const text =
-        "Here are the top 10 places to visit in Taiwan. Taipei 101, the iconic skyscraper in Taipei, is one of the tallest buildings in the world and offers stunning views of the city. The building also has the fastest elevator in the world, which can transport visitors from the 5th floor to the 89th floor in just 37 seconds. Taroko Gorge Located in the Taroko National Park, Taroko Gorge is a breathtaking natural wonder with towering cliffs, waterfalls, and marble formations. The largest lake in Taiwan, Sun Moon Lake, is a popular tourist destination for its scenic beauty, cycling routes, and hiking trails. It is a must-visit destination for anyone traveling to Taiwan, offering a unique and unforgettable experience for visitors of all ages. Jiufen A charming town located in the mountains near Taipei, Jufen is famous for its narrow alleys, tea houses, and stunning ocean views. Kenting National Park Located at the southern tip of Taiwan, Kenting National Park is a popular beach destination with a wide variety of outdoor activities. Tainan The oldest city in Taiwan, Tainan is famous for its historical sites, temples, and traditional food. Yashin National Park Home to Taiwan's highest peak, Yashin National Park is a hiker's paradise with stunning mountain views and natural hot springs. Baitou Hot Springs Located just outside Taipei, Baitou is a popular hot spring destination known for its natural hot springs, spas, and beautiful scenery. Alishan A mountainous region in central Taiwan, Alishan is famous for its scenic railway, tea plantations, and stunning sunrises. Visitors can enjoy the natural beauty of the forest by taking a train ride through the mountains or by hiking along the many trails that wind through the forest. The Fo Guangshan Buddha Museum is a large Buddhist cultural complex located in the Daxiu district of Kyushu. The museum contains a vast collection of Buddhist art and artifacts, as well as numerous exhibits on Buddhist history, philosophy, and practice. Where do you want to visit next?";
+        caption = result.data.desc;
+      } else if (platform === "instagram") {
+        const response = await fetch(link, options);
+        result = await response.json();
+        console.log("ig ", result);
+        queryObj = {
+          link_id: result.data.id,
+          url: result.items[0].video_versions[0].url,
+        };
+        caption = result.items[0].code;
+      }
+      let queryResult;
+      console.log("test2");
 
-      const locationResult = await makePostRequest("/api/openai_location", {
-        data: text,
-      });
-      console.log("open api location");
-      console.timeEnd("open api location");
-      setLocations(locationResult.output.choices[0].message.content);
+      // queryObj = {
+      //   link_id: "test2",
+      // };
+
+      try {
+        console.log(queryObj);
+        queryResult = await makePostRequest("/api/queryVideoId", queryObj);
+        console.log(queryResult);
+        setQueryExist(queryResult.exist);
+      } catch (error) {
+        console.error("Error fetching user data", error);
+        // Handle error accordingly
+      }
+
+      if (queryResult.exist == "new") {
+        console.log(result);
+        whisperResult = makePostRequest("/api/whisper", result);
+        ocrResult = await makePostRequest("/api/awsOcr", result);
+        text = whisperResult + caption + ocrResult;
+
+        // const text =
+        //   "Here are the top 10 places to visit in Taiwan. Taipei 101, the iconic skyscraper in Taipei, is one of the tallest buildings in the world and offers stunning views of the city. The building also has the fastest elevator in the world, which can transport visitors from the 5th floor to the 89th floor in just 37 seconds. Taroko Gorge Located in the Taroko National Park, Taroko Gorge is a breathtaking natural wonder with towering cliffs, waterfalls, and marble formations. The largest lake in Taiwan, Sun Moon Lake, is a popular tourist destination for its scenic beauty, cycling routes, and hiking trails. It is a must-visit destination for anyone traveling to Taiwan, offering a unique and unforgettable experience for visitors of all ages. Jiufen A charming town located in the mountains near Taipei, Jufen is famous for its narrow alleys, tea houses, and stunning ocean views. Kenting National Park Located at the southern tip of Taiwan, Kenting National Park is a popular beach destination with a wide variety of outdoor activities. Tainan The oldest city in Taiwan, Tainan is famous for its historical sites, temples, and traditional food. Yashin National Park Home to Taiwan's highest peak, Yashin National Park is a hiker's paradise with stunning mountain views and natural hot springs. Baitou Hot Springs Located just outside Taipei, Baitou is a popular hot spring destination known for its natural hot springs, spas, and beautiful scenery. Alishan A mountainous region in central Taiwan, Alishan is famous for its scenic railway, tea plantations, and stunning sunrises. Visitors can enjoy the natural beauty of the forest by taking a train ride through the mountains or by hiking along the many trails that wind through the forest. The Fo Guangshan Buddha Museum is a large Buddhist cultural complex located in the Daxiu district of Kyushu. The museum contains a vast collection of Buddhist art and artifacts, as well as numerous exhibits on Buddhist history, philosophy, and practice. Where do you want to visit next?";
+
+        locationResult = await makePostRequest("/api/openai_location", {
+          data: text,
+        });
+        console.log("open api location");
+        console.timeEnd("open api location");
+        console.log(queryResult.query_id);
+        setQueryID(queryResult.query_id[0].id);
+        setLocations(locationResult.output.choices[0].message.content);
+      } else {
+        //exist: get locations from db and set location
+        setLocations(queryResult.query_id);
+      }
+
       setLoading(false);
       // // to do next -> connect to serp api and find the coordinates and video ocr
     } catch (error) {
@@ -211,7 +246,14 @@ export default function Home() {
   useEffect(() => {
     if (locations === undefined || locations.length != 0) {
       // to do next -> connect to serp api and find the coordinates and video ocr
-      push({ pathname: "/map", query: { location: locations } });
+      push({
+        pathname: "/map",
+        query: {
+          location: locations,
+          queryId: queryID,
+          exist: queryExist || null,
+        },
+      });
     }
   }, [locations]);
 

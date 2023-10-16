@@ -1,4 +1,4 @@
-import serpOutput from "../../../dummyData/serpOutput.json";
+// import serpOutput from "../../../dummyData/serpOutput.json";
 const SerpApi = require("google-search-results-nodejs");
 const fs = require("fs");
 const { db, insertPlace } = require("./../../lib/db");
@@ -58,16 +58,18 @@ export default async function handler(req, res) {
 
   try {
     console.time("serp");
-    // const serpOutput = await getMultiSerpResult(req.body);
+    const serpOutput = await getMultiSerpResult(req.body.location);
     console.log("serp");
     console.timeEnd("serp");
     console.log("Google2");
-    // fs.writeFileSync("serpOutput.txt", JSON.stringify(serpOutput, null, 4));
+    fs.writeFileSync("serpOutput.txt", JSON.stringify(serpOutput, null, 4));
 
     console.log(serpOutput.length);
     console.time("add mapbox detail");
-    const result = await addMapboxDetail(serpOutput);
     console.log("add mapbox detail");
+
+    console.log(req.body);
+    const result = await addMapboxDetail(serpOutput, req.body.queryId);
     console.timeEnd("add mapbox detail");
 
     console.log("send details to local " + result.features.length);
@@ -87,9 +89,9 @@ const matchEmoji = async (title, desc) => {
 };
 
 // Add detailed information from Mapbox
-const addMapboxDetail = async (data) => {
+const addMapboxDetail = async (data, queryId) => {
   // the callback. Use a better name
-  console.log("test in add mapbox detail first line " + data.length);
+  // console.log("test in add mapbox detail first line " + data.length);
 
   const featureCollection = {
     type: "FeatureCollection",
@@ -109,8 +111,8 @@ const addMapboxDetail = async (data) => {
       console.error("Error matching emoji:", err);
     }
 
-    console.log("before place");
-    console.log(place);
+    // console.log("before place");
+    // console.log(place);
     feature = {
       type: "Feature",
       geometry: {
@@ -124,17 +126,17 @@ const addMapboxDetail = async (data) => {
     };
 
     featureCollection.features.push(feature);
-    console.log("feature collection");
-    console.log(featureCollection);
-    console.log(featureCollection.features);
-    await insertPlace(db, feature).catch((err) => {
+    // console.log("feature collection");
+    // console.log(featureCollection);
+    // console.log(featureCollection.features);
+    await insertPlace(db, feature, queryId).catch((err) => {
       console.error(err);
       process.exit(1);
     });
   }
 
-  console.log("in tempList last line" + featureCollection.features.length);
-  console.log(featureCollection);
+  // console.log("in tempList last line" + featureCollection.features.length);
+  // console.log(featureCollection);
 
   return featureCollection;
 };
@@ -150,13 +152,34 @@ const extractPlaceInfo = (item) => {
     rating: 4.5,
     reviewCount: 123,
     hours: JSON.stringify({
-      thursday: "10 AM–6 PM",
-      friday: "10 AM–6 PM",
-      saturday: "10 AM–6 PM",
-      sunday: "10 AM–6 PM",
-      monday: "Closed",
-      tuesday: "10 AM–6 PM",
-      wednesday: "10 AM–6 PM",
+      friday: {
+        opens: "8 AM",
+        closes: "5 PM",
+      },
+      monday: {
+        opens: "Closed",
+        closes: "Closed",
+      },
+      sunday: {
+        opens: "8 AM",
+        closes: "5 PM",
+      },
+      tuesday: {
+        opens: "8 AM",
+        closes: "5 PM",
+      },
+      saturday: {
+        opens: "8 AM",
+        closes: "5 PM",
+      },
+      thursday: {
+        opens: "8 AM",
+        closes: "5 PM",
+      },
+      wednesday: {
+        opens: "8 AM",
+        closes: "5 PM",
+      },
     }),
     phone: "+1 234-567-8901",
     address: "123 Main St, Cityville, State, 12345",
@@ -367,6 +390,6 @@ const extractPlaceInfo = (item) => {
     };
   }
   console.log("placeInfo");
-  console.log(placeInfo);
+  // console.log(placeInfo);
   return placeInfo;
 };
