@@ -207,20 +207,6 @@ function Mapbox(props) {
     console.log(toggleDetail, toggleIndex, details);
   }, [toggleDetail, toggleIndex, details]);
 
-  // if (
-  //   toggleDetail !== undefined &&
-  //   details !== undefined &&
-  //   toggleIndex !== undefined
-  // ) {
-  //   document.getElementById(
-  //     `listing-${details[toggleIndex].properties.id}`
-  //   ).style.display = "none";
-  // } else {
-  //   document.getElementById(
-  //     `listing-${details[toggleIndex].properties.id}`
-  //   ).style.display = "block";
-  // }
-
   function addMarkers(data) {
     /* For each feature in the GeoJSON object above: */
     for (const marker of data.features) {
