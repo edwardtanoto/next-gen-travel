@@ -126,10 +126,8 @@ height: 50px;
 }
 @media only screen and (max-width: 600px) {
   body{
+    height: 100vh;
     overflow: hidden;
-  }
-  input, select, textarea {
-    font-size: 12px;
   }
   .title {
     font-size: 4rem;
@@ -138,17 +136,20 @@ height: 50px;
     margin-left: 0;
     margin-top: 40px;
   }
+  .input-box {
+    font-size: 16px;
+  }
   .link-group{
     position: absolute;
     margin-left: 0;
     width: 100%;
     font-size: 12px;
     left: 0;
-    margin-top: 350px;
+    margin-top: 380px;
   }
   .form-group{
     margin-left: 0;
-    margin-top: 47.5vh;
+    margin-top: 58vh;
   }
   .description {
     font-size: 12px;
