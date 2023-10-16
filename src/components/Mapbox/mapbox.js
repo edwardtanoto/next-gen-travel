@@ -256,15 +256,39 @@ function Mapbox(props) {
 
   return (
     <div className={styles.mapbox}>
-      <div className={styles.sidebar}>
+      <div
+        className={`${toggleDetail ? styles.sidebar_detail : styles.sidebar}`}
+      >
         <div className={styles.heading}>
-          <p> </p>
+          <p>
+            {toggleDetail && (
+              <span
+                onClick={() => {
+                  setToggleDetail((toggleDetail) => !toggleDetail);
+                }}
+              >
+                x
+              </span>
+            )}
+          </p>
           <p>{destinationLength} destinations</p>
-          <img src="/logo/Share.svg" width={"16px"} height={"16px"} />
+          {!toggleDetail ? (
+            <img src="/logo/Share.svg" width={"16px"} height={"16px"} />
+          ) : (
+            <p></p>
+          )}
         </div>
 
         {toggleDetail && (
-          <div id="details-view" style={{ height: "750px" }}>
+          <div
+            id="details-view"
+            style={{
+              height: "750px",
+              zIndex: 10,
+              position: "absolute",
+              background: "white",
+            }}
+          >
             {/* {
               (document.getElementById(
                 `listing-${details[toggleIndex].properties.id}`
@@ -274,7 +298,7 @@ function Mapbox(props) {
               width="100%"
               height="200px"
               style={{
-                borderRadius: "16px",
+                borderRadius: "0 0 16px 16px",
               }}
               onClick={() => {
                 setToggleDetail((toggleDetail) => !toggleDetail);
