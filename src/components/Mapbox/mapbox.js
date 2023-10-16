@@ -6,6 +6,7 @@ import styles from "../../styles/mapbox.module.css";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { makePostRequest } from "../../lib/api";
 import { isMobile } from "react-device-detect";
+import posthog from "posthog-js";
 
 //Mapbox API Token
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
@@ -98,6 +99,7 @@ function Mapbox(props) {
 
   function buildLocationList(stores) {
     setDetails(stores.features);
+    posthog?.capture("map loaded", { property: stores.features });
     for (const store of stores.features) {
       /* Add a new listing section to the sidebar. */
       const listings = document.getElementById("listings");
