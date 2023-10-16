@@ -4,7 +4,7 @@ import { makePostRequest } from "../lib/api";
 import { useRouter } from "next/navigation";
 import mapboxgl from "mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
 import "mapbox-gl/dist/mapbox-gl.css";
-// import { db, insertQuery } from "./../lib/db";
+import posthog from "posthog-js";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
@@ -138,15 +138,9 @@ export default function Home() {
 
     document.addEventListener("paste", handlePasteEvent);
     window.addEventListener("load", handlePasteEvent);
-    document
-      .getElementById("input-link")
-      .addEventListener("click", handlePasteEvent);
     return () => {
       document.removeEventListener("paste", handlePasteEvent);
       window.addEventListener("load", handlePasteEvent);
-      document
-        .getElementById("input-link")
-        .addEventListener("click", handlePasteEvent);
     };
   }, []);
 
@@ -344,6 +338,9 @@ export default function Home() {
                 onPaste={function (e) {
                   onSubmit(e.clipboardData.getData("Text"));
                   console.log(e.clipboardData.getData("Text"));
+                  posthog?.capture("input pasted", {
+                    property: e.clipboardData.getData("Text"),
+                  });
                 }}
                 disabled={loading}
                 className="input-box"

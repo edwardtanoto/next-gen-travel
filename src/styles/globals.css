@@ -9,6 +9,7 @@ body {
   background-position: right;
   background-size: cover;
   height: 100vh;
+  margin: 0;
   position: relative;
   overflow: hidden;
   background-repeat: no-repeat;
@@ -126,6 +127,7 @@ height: 50px;
 }
 @media only screen and (max-width: 600px) {
   body{
+    margin: 0;
     height: 100vh;
     overflow: hidden;
   }

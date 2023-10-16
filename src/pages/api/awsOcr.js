@@ -3,6 +3,8 @@ const OpenAI = require("openai");
 // Configure AWS SDK
 AWS.config.update({
   region: "us-east-1",
+  accessKeyId: process.env.ACCESS_KEY_ID, // Set access key here
+  secretAccessKey: process.env.SECRET_ACCESS_KEY,
 });
 const s3 = new AWS.S3();
 const rekognition = new AWS.Rekognition();
