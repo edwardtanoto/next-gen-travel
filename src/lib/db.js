@@ -101,6 +101,9 @@ async function getQueryIdFromLinkId(db, queryObj) {
   ) 
   RETURNING id
   `);
+  console.log("link_id doesnot exist");
+
+  console.log(queryResult);
 
   return { query_id: queryResult, exist: "new" };
 }

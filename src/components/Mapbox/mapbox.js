@@ -5,7 +5,7 @@ import mapboxgl from "mapbox-gl"; // eslint-disable-line import/no-webpack-loade
 import styles from "../../styles/mapbox.module.css";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { makePostRequest } from "../../lib/api";
-import { db, getPlacesByQueryId } from ("./../../lib/db");
+// import { db, getPlacesByQueryId } from ("./../../lib/db");
 
 //Mapbox API Token
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
@@ -13,16 +13,27 @@ mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 function Mapbox(props) {
   const mapContainer = useRef(null);
   const map = useRef(null);
+  const [serpResult, setSerpResult] = useState();
   const [lng, setLng] = useState(-122.2679252);
   const [lat, setLat] = useState(37.5593266);
   const [zoom, setZoom] = useState(7);
   const [destinationLength, setDestinationLength] = useState(0);
 
+  const callExistLoction = async () => {
+    const places = await makePostRequest("/api/queryPlacesfromQId", {
+      id: props.router.query.location,
+    });
+    console.log(places);
+    return places;
+  };
+
   useEffect(() => {
-    console.log(
-      "mapbox props ",
-      `${typeof JSON.parse(props.router.query.location.replace(/'/g, '"'))}`
-    );
+    // console.log(
+    //   "mapbox props ",
+    //   `${typeof JSON.parse(props.router.query.location)}`,
+    //   `${props.router.query.queryId}`
+    // );
+    console.log(props.router.query);
     const fetchSerp = async () => {
       try {
         const serpResult = await makePostRequest("/api/serp", {
@@ -61,30 +72,32 @@ function Mapbox(props) {
     //get location serp or get from db
     if (props.router.query.exist == "exist") {
       //and turn it into geojson obj
-      const featureCollection = {
-        type: "FeatureCollection",
-        features: [],
-      };
-      let location = props.router.query.location;
-
-      location.forEach((item) => {
-        featureCollection.features.push(item);
+      callExistLoction().then((featureCollection) => {
+        console.log(featureCollection);
+        setDestinationLength(featureCollection.features.length);
+        featureCollection.features.forEach(function (store, i) {
+          store.properties.id = i;
+        });
+        buildLocationList(featureCollection);
+        addMarkers(featureCollection);
       });
-      setDestinationLength(featureCollection.features.length);
-      buildLocationList(featureCollection);
-      addMarkers(featureCollection);
     } else {
       fetchSerp().then((serpResult) => {
+        setSerpResult(serpResult);
         console.log(serpResult);
         console.log(serpResult.features);
         setDestinationLength(serpResult.features.length);
-        serpResult.features.forEach(function (store, i) {
-          store.properties.id = i;
-        });
 
         buildLocationList(serpResult);
         addMarkers(serpResult);
       });
+      // if (props.router.query.exist == "exist") {
+
+      //   setSerpResult(places);
+      //   console.log(serpResult);
+      // } else {
+
+      // }
     }
   });
 

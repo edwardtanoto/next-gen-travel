@@ -14,8 +14,8 @@ export default function Home() {
   const { push } = useRouter();
 
   const [locations, setLocations] = useState([]);
-  const [linkId, setLinkID] = useState();
-  const [queryId, setQueryID] = useState();
+  const [queryID, setQueryID] = useState();
+  const [queryExist, setQueryExist] = useState();
 
   const [inputPlatform, setInputPlatform] = useState("");
   const [loading, setLoading] = useState(false);
@@ -146,28 +146,28 @@ export default function Home() {
 
   const fetchFromSocial = async (link, platform) => {
     console.log("in fetech");
-    // console.log("fetchTiktok ", link);
-    // let options;
-    // if (platform === "tiktok") {
-    //   options = {
-    //     method: "GET",
-    //     headers: {
-    //       "X-RapidAPI-Key":
-    //         "456b9d753bmsh684626de7cfebc7p1d7469jsn2f4e9d178868",
-    //       "X-RapidAPI-Host":
-    //         "tiktok-download-video-no-watermark.p.rapidapi.com",
-    //     },
-    //   };
-    // } else if (platform === "instagram") {
-    //   options = {
-    //     method: "GET",
-    //     headers: {
-    //       "X-RapidAPI-Key":
-    //         "456b9d753bmsh684626de7cfebc7p1d7469jsn2f4e9d178868",
-    //       "X-RapidAPI-Host": "instagram-media-downloader.p.rapidapi.com",
-    //     },
-    //   };
-    // }
+    console.log("fetchTiktok ", link);
+    let options;
+    if (platform === "tiktok") {
+      options = {
+        method: "GET",
+        headers: {
+          "X-RapidAPI-Key":
+            "456b9d753bmsh684626de7cfebc7p1d7469jsn2f4e9d178868",
+          "X-RapidAPI-Host":
+            "tiktok-download-video-no-watermark.p.rapidapi.com",
+        },
+      };
+    } else if (platform === "instagram") {
+      options = {
+        method: "GET",
+        headers: {
+          "X-RapidAPI-Key":
+            "456b9d753bmsh684626de7cfebc7p1d7469jsn2f4e9d178868",
+          "X-RapidAPI-Host": "instagram-media-downloader.p.rapidapi.com",
+        },
+      };
+    }
 
     try {
       setLoading(true);
@@ -181,7 +181,7 @@ export default function Home() {
       let locationResult;
       if (platform === "tiktok") {
         const response = await fetch(link, options);
-        let result = await response.text();
+        result = await response.text();
         result = JSON.parse(result);
         console.log("tr ", result);
         queryObj = { link_id: result.data.id, url: result.data.video_link_wm };
@@ -198,20 +198,24 @@ export default function Home() {
         caption = result.items[0].code;
       }
       let queryResult;
+      console.log("test2");
 
-      queryObj = {
-        link_id: "test2",
-      };
+      // queryObj = {
+      //   link_id: "test2",
+      // };
 
       try {
+        console.log(queryObj);
         queryResult = await makePostRequest("/api/queryVideoId", queryObj);
-        console.log(queryResult.query_id);
+        console.log(queryResult);
+        setQueryExist(queryResult.exist);
       } catch (error) {
         console.error("Error fetching user data", error);
         // Handle error accordingly
       }
 
-      if (queryResult[exist] != "exist") {
+      if (queryResult.exist == "new") {
+        console.log(result);
         whisperResult = makePostRequest("/api/whisper", result);
         ocrResult = await makePostRequest("/api/awsOcr", result);
         text = whisperResult + caption + ocrResult;
@@ -224,13 +228,12 @@ export default function Home() {
         });
         console.log("open api location");
         console.timeEnd("open api location");
+        console.log(queryResult.query_id);
+        setQueryID(queryResult.query_id[0].id);
         setLocations(locationResult.output.choices[0].message.content);
       } else {
         //exist: get locations from db and set location
-        const places = await makePostRequest("/api/queryPlacesfromQId", {
-          id: queryResult.query_id,
-        });
-        setLocations(places);
+        setLocations(queryResult.query_id);
       }
 
       setLoading(false);
@@ -247,7 +250,8 @@ export default function Home() {
         pathname: "/map",
         query: {
           location: locations,
-          exist: queryResult.exist || null,
+          queryId: queryID,
+          exist: queryExist || null,
         },
       });
     }

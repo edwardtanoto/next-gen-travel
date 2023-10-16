@@ -3,6 +3,8 @@ import { useRouter } from "next/navigation";
 import { makePostRequest } from "../../lib/api";
 
 const Test = () => {
+  const { push } = useRouter();
+
   const fetchSerp = async () => {
     try {
       console.log("start ocr");
@@ -73,10 +75,18 @@ const Test = () => {
       console.log("ocrResult.id");
 
       console.log(ocrResult);
-      const places = await makePostRequest("/api/queryPlacesfromQId", {
-        id: ocrResult.id,
+      // const places = await makePostRequest("/api/queryPlacesfromQId", {
+      //   id: ocrResult.query_id,
+      // });
+      // console.log(places);
+
+      push({
+        pathname: "/map",
+        query: {
+          location: ocrResult.query_id,
+          exist: ocrResult.exist || null,
+        },
       });
-      console.log(places);
 
       // console.log(openAIResult.choices[0].message.content);
       // return openAIResult.choices[0].message.content;

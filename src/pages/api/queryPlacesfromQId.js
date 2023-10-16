@@ -20,9 +20,40 @@ export default async function handler(req, res) {
     SELECT * FROM places WHERE query_id = ${queryId}
   `);
 
-    console.log(places);
     if (places.length > 0) {
-      return res.json(places);
+      console.log(places);
+      const featureCollection = {
+        type: "FeatureCollection",
+        features: [],
+      };
+      places.forEach((place) => {
+        let feature = {
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: [place.latitude, place.longitude],
+          },
+          properties: {
+            title: place.title,
+            type: place.type,
+            description: place.description,
+            emojiType: place.emoji_type,
+            price: place.price,
+            rating: place.rating,
+            reviewCount: place.review_count,
+            hours: place.hours,
+            phone: place.phone,
+            address: place.address,
+            timeSpend: place.time_spend,
+            permanently_closed: place.permanently_closed,
+            externalLinks: [],
+            images: JSON.stringify(place.images),
+          },
+        };
+        featureCollection.features.push(feature);
+      });
+      console.log(featureCollection);
+      return res.json(featureCollection);
     } else {
       return res.status(404).json({ error: "User not found" });
     }
