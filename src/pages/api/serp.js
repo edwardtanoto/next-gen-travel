@@ -81,10 +81,9 @@ export default async function handler(req, res) {
 
 // Match emoji for given title and description
 const matchEmoji = async (title, desc) => {
-  const response = await makePostRequest(
-    `${process.env.URL}/api/openai_emoji`,
-    { data: `${title} ${desc}` }
-  );
+  const response = await makePostRequest(`/api/openai_emoji`, {
+    data: `${title} ${desc}`,
+  });
   return response.output.choices[0].message.content;
 };
 
