@@ -55,11 +55,11 @@ export default async function handler(req, res) {
     res.status(405).end(); // Method Not Allowed
     return;
   }
+  let serpOutput;
 
   try {
     console.time("serp");
-
-    const serpOutput = await getMultiSerpResult(req.body.location);
+    serpOutput = await getMultiSerpResult(req.body.location);
     console.log("serp");
     console.timeEnd("serp");
     console.log("Google2");
@@ -70,13 +70,17 @@ export default async function handler(req, res) {
     console.log("add mapbox detail");
 
     console.log(req.body);
+  } catch (err) {
+    res.status(500).json({ error: "failed to load data1" });
+  }
+  try {
     const result = await addMapboxDetail(serpOutput, req.body.queryId);
     console.timeEnd("add mapbox detail");
 
     console.log("send details to local " + result.features.length);
     res.status(200).json({ result });
   } catch (err) {
-    res.status(500).json({ error: "failed to load data" });
+    res.status(500).json({ error: "failed to load data2" });
   }
 }
 
