@@ -8,7 +8,6 @@ import { makePostRequest } from "../../lib/api";
 import { isMobile } from "react-device-detect";
 import posthog from "posthog-js";
 
-
 //Mapbox API Token
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
@@ -87,7 +86,6 @@ function Mapbox(props) {
       });
     } else {
       fetchSerp().then((serpResult) => {
-        setSerpResult(serpResult);
         console.log(serpResult);
         console.log(serpResult.features);
         setDestinationLength(serpResult.features.length);
