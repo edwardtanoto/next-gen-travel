@@ -38,7 +38,7 @@ function Mapbox(props) {
     const fetchSerp = async () => {
       try {
         const serpResult = await makePostRequest("/api/serp", {
-          location: `${path}`, //props.router.query.location
+          location: path, //props.router.query.location
           queryId: props.router.query.queryId,
         });
         console.log("sr length ", serpResult.result.length);
