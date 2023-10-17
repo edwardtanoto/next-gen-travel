@@ -1,6 +1,6 @@
 // import serpOutput from "../../../dummyData/serpOutput.json";
 const SerpApi = require("google-search-results-nodejs");
-const fs = require("fs");
+// const fs = require("fs");
 const { db, insertPlace } = require("./../../lib/db");
 const { makePostRequest } = require("./../../lib/api");
 
@@ -58,11 +58,12 @@ export default async function handler(req, res) {
 
   try {
     console.time("serp");
+
     const serpOutput = await getMultiSerpResult(req.body.location);
     console.log("serp");
     console.timeEnd("serp");
     console.log("Google2");
-    fs.writeFileSync("serpOutput.txt", JSON.stringify(serpOutput, null, 4));
+    // fs.writeFileSync("serpOutput.txt", JSON.stringify(serpOutput, null, 4));
 
     console.log(serpOutput.length);
     console.time("add mapbox detail");
