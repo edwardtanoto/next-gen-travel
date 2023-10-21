@@ -24,22 +24,22 @@ body {
   cursor: pointer;
   font-family: 'Space Grotesk';
   color: white;
-  -webkit-animation: SurpriseMeAnimation 4s ease infinite;
-  -moz-animation: SurpriseMeAnimation 4s ease infinite;
-  animation: SurpriseMeAnimation 4s ease infinite;
+  -webkit-animation: SurpriseMeButtonAnimation 4s ease infinite;
+  -moz-animation: SurpriseMeButtonAnimation 4s ease infinite;
+  animation: SurpriseMeButtonAnimation 4s ease infinite;
 }
 
-@-webkit-keyframes SurpriseMeAnimation {
+@-webkit-keyframes SurpriseMeButtonAnimation {
   0%{background-position:0% 50%}
   50%{background-position:100% 50%}
   100%{background-position:0% 50%}
 }
-@-moz-keyframes SurpriseMeAnimation {
+@-moz-keyframes SurpriseMeButtonAnimation {
   0%{background-position:0% 50%}
   50%{background-position:100% 50%}
   100%{background-position:0% 50%}
 }
-@keyframes SurpriseMeAnimation {
+@keyframes SurpriseMeButtonAnimation {
   0%{background-position:0% 50%}
   50%{background-position:100% 50%}
   100%{background-position:0% 50%}
