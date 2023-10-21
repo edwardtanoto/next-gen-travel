@@ -57,20 +57,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.time("serp");
     const serpOutput = await getMultiSerpResult(req.body.location);
-    console.log("serp");
-    console.timeEnd("serp");
-    console.log("Google2");
+
     // fs.writeFileSync("serpOutput.txt", JSON.stringify(serpOutput, null, 4));
-
-    console.log(serpOutput.length);
-    console.time("add mapbox detail");
-    console.log("add mapbox detail");
-
-    console.log(req.body);
     const result = await addMapboxDetail(serpOutput, req.body.queryId);
-    console.timeEnd("add mapbox detail");
 
     console.log("send details to local " + result.features.length);
     res.status(200).json({ result });
@@ -81,9 +71,12 @@ export default async function handler(req, res) {
 
 // Match emoji for given title and description
 const matchEmoji = async (title, desc) => {
-  const response = await makePostRequest(`/api/openai_emoji`, {
-    data: `${title} ${desc}`,
-  });
+  const response = await makePostRequest(
+    `${process.env.URL}/api/openai_emoji`,
+    {
+      data: `${title} ${desc}`,
+    }
+  );
   return response.output.choices[0].message.content;
 };
 
@@ -127,7 +120,7 @@ const addMapboxDetail = async (data, queryId) => {
     featureCollection.features.push(feature);
     // console.log("feature collection");
     // console.log(featureCollection);
-    // console.log(featureCollection.features);
+    console.log(featureCollection.features);
     await insertPlace(db, feature, queryId).catch((err) => {
       console.error(err);
       process.exit(1);
