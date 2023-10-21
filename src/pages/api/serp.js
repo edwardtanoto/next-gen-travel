@@ -83,7 +83,6 @@ const matchEmoji = async (title, desc) => {
 // Add detailed information from Mapbox
 const addMapboxDetail = async (data, queryId) => {
   // the callback. Use a better name
-  // console.log("test in add mapbox detail first line " + data.length);
 
   const featureCollection = {
     type: "FeatureCollection",
