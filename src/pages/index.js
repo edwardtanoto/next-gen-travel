@@ -348,6 +348,22 @@ export default function Home() {
             </span>
           </form>
           <br />
+          <button
+            onClick={function (e) {
+              onSubmit(
+                "https://www.tiktok.com/@katbennettphoto/video/7203114951429442858?is_from_webapp=1&web_id=7272989977013126699"
+              );
+              document.getElementById("input-link").value =
+                "https://www.tiktok.com/@katbennettphoto/video/7203114951429442858?is_from_webapp=1&web_id=7272989977013126699";
+              posthog?.capture("input pasted", {
+                property:
+                  "https://www.tiktok.com/@katbennettphoto/video/7203114951429442858?is_from_webapp=1&web_id=7272989977013126699",
+              });
+            }}
+            className="surprise-me"
+          >
+            👀 surprise me here!
+          </button>
           <br />
           <p className="description">
             our mission is to fund every continent with japanese toilet,

@@ -15,6 +15,36 @@ body {
   background-repeat: no-repeat;
 }
 
+.surprise-me {
+  background: linear-gradient(270deg, #627aff, #e796ff, #98beff);
+  background-size: 600% 600%;
+  border-radius: 8px;
+  border: 0;
+  padding: 12px;
+  cursor: pointer;
+  font-family: 'Space Grotesk';
+  color: white;
+  -webkit-animation: SurpriseMeAnimation 4s ease infinite;
+  -moz-animation: SurpriseMeAnimation 4s ease infinite;
+  animation: SurpriseMeAnimation 4s ease infinite;
+}
+
+@-webkit-keyframes SurpriseMeAnimation {
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+@-moz-keyframes SurpriseMeAnimation {
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+@keyframes SurpriseMeAnimation {
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
 .mt-4 {
   margin-top: 4em;
 }
