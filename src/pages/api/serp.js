@@ -27,7 +27,7 @@ const gmaps_params = {
 // Get SERP result for a given item and parameters
 const getSerpResult = (params, item) => {
   console.log(params);
-  params.q = item[0] + item[1];
+  params.q = item[0] + " " + item[1];
   return new Promise((resolve) => {
     search.json(params, resolve);
   });
@@ -57,8 +57,8 @@ export default async function handler(req, res) {
   }
 
   try {
+    console.log(req.body.location);
     const serpOutput = await getMultiSerpResult(req.body.location);
-
     // fs.writeFileSync("serpOutput.txt", JSON.stringify(serpOutput, null, 4));
     const result = await addMapboxDetail(serpOutput, req.body.queryId);
 

@@ -216,7 +216,7 @@ export default function Home() {
 
       if (queryResult.exist == "new") {
         console.log(result);
-        whisperResult = makePostRequest("/api/whisper", result);
+        whisperResult = await makePostRequest("/api/whisper", result);
         ocrResult = await makePostRequest("/api/awsOcr", result);
         text = whisperResult + caption + ocrResult;
 
