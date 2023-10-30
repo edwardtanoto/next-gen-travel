@@ -33,6 +33,9 @@ export default function Home() {
       center: [0, 0],
       scrollZoom: false,
       doubleClickZoom: false,
+      boxZoom: false,
+      touchZoomRotate: false,
+      touchPitch: false,
       zoom: 2,
     });
 
