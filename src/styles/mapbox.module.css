@@ -2,6 +2,10 @@
 
 /* The page is split between map and sidebar - the sidebar gets 1/3, map
   gets 2/3 of the page. You can adjust this to your personal liking. */
+  .listings {
+    scroll-margin-top: 100px;
+  }
+
 .sidebar, .sidebar_detail {
   position: absolute;
   width: 30%;
@@ -80,6 +84,7 @@
 .listings .item .title {
   display: block;
   color: black;
+  text-align: left;
   font-family: "Space Grotesk", sans-serif;
   font-weight: bold;
 }
@@ -87,6 +92,7 @@
 .title {
   padding-left: 20px;
   padding-top: 20px;
+  padding-bottom: 5px;
   text-decoration: none;
 }
 
@@ -188,6 +194,7 @@
 
 @media only screen and (max-width: 600px) {
   .sidebar {
+    perspective: 1px;
     position: fixed;
     width: 100%;
     height: 45px;
@@ -208,7 +215,14 @@
     height: 45px;
     color: black;
   }
-
+  .listings .item .title {
+    display: block;
+    color: black;
+    text-align: center;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: bold;
+    padding-left: 0px;
+  }
   .sidebar:hover {
     position: fixed;
     width: 100%;

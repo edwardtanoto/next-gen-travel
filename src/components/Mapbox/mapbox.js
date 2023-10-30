@@ -224,7 +224,7 @@ function Mapbox(props) {
         for (const feature of stores.features) {
           if (this.id === `link-${feature.properties.id}`) {
             flyToStore(feature);
-            createPopUp(feature);
+            //createPopUp(feature);
           }
         }
         const activeItem = document.getElementsByClassName(`${styles.active}`);
@@ -260,7 +260,7 @@ function Mapbox(props) {
         /* Fly to the point */
         flyToStore(marker);
         /* Close all other popups and display popup for clicked store */
-        createPopUp(marker);
+        //createPopUp(marker);
         /* Highlight listing in sidebar */
         const activeItem = document.getElementsByClassName(`${styles.active}`);
         e.stopPropagation();
@@ -270,10 +270,14 @@ function Mapbox(props) {
         const listing = document.getElementById(
           `listing-${marker.properties.id}`
         );
-        listing.scrollIntoView({
+        const listings = document.getElementById("listings");
+        const headerOffset = 45;
+        const elementPosition = listing.getBoundingClientRect().y;
+        const offsetPosition = elementPosition + window.scrollY - headerOffset;
+
+        listings.scrollTo({
+          top: offsetPosition,
           behavior: "smooth",
-          block: "start",
-          inline: "center",
         });
         listing.classList.add(`${styles.active}`);
       });
