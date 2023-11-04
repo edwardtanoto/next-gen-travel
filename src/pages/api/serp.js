@@ -28,6 +28,7 @@ const gmaps_params = {
 const getSerpResult = (params, item) => {
   console.log(params);
   params.q = item[0] + " " + item[1];
+  console.log("line31 ", params, item, params.q, item[0]);
   return new Promise((resolve) => {
     search.json(params, resolve);
   });
@@ -36,9 +37,11 @@ const getSerpResult = (params, item) => {
 // Get multiple SERP results for given locations
 const getMultiSerpResult = async (locations) => {
   locations = JSON.parse(locations.replace(/'/g, '"'));
+  console.log("line40 ", locations, typeof locations);
   const serpResults = await Promise.all(
     locations.map(async (item) => {
       try {
+        console.log("line44 ", item);
         const googleResult = await getSerpResult(google_params, item);
         const gmapsResult = await getSerpResult(gmaps_params, item);
         return { google: googleResult, gmaps: gmapsResult };

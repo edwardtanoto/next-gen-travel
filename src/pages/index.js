@@ -4,7 +4,7 @@ import { makePostRequest } from "../lib/api";
 import { useRouter } from "next/navigation";
 import mapboxgl from "mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
 import "mapbox-gl/dist/mapbox-gl.css";
-import posthog from "posthog-js";
+// import posthog from "posthog-js";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
@@ -341,9 +341,9 @@ export default function Home() {
                 onPaste={function (e) {
                   onSubmit(e.clipboardData.getData("Text"));
                   console.log(e.clipboardData.getData("Text"));
-                  posthog?.capture("input pasted", {
-                    property: e.clipboardData.getData("Text"),
-                  });
+                  // posthog?.capture("input pasted", {
+                  //   property: e.clipboardData.getData("Text"),
+                  // });
                 }}
                 disabled={loading}
                 className="input-box"
@@ -358,10 +358,10 @@ export default function Home() {
               );
               document.getElementById("input-link").value =
                 "https://www.tiktok.com/@katbennettphoto/video/7203114951429442858?is_from_webapp=1&web_id=7272989977013126699";
-              posthog?.capture("input pasted", {
-                property:
-                  "https://www.tiktok.com/@katbennettphoto/video/7203114951429442858?is_from_webapp=1&web_id=7272989977013126699",
-              });
+              // posthog?.capture("input pasted", {
+              //   property:
+              //     "https://www.tiktok.com/@katbennettphoto/video/7203114951429442858?is_from_webapp=1&web_id=7272989977013126699",
+              // });
             }}
             className="surprise-me"
           >
