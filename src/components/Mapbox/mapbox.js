@@ -6,7 +6,7 @@ import styles from "../../styles/mapbox.module.css";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { makePostRequest } from "../../lib/api";
 import { isMobile } from "react-device-detect";
-import posthog from "posthog-js";
+//import posthog from "posthog-js";
 
 //Mapbox API Token
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
@@ -22,13 +22,13 @@ function Mapbox(props) {
   const [details, setDetails] = useState([]);
   const [destinationLength, setDestinationLength] = useState(0);
 
-  const callExistLoction = async () => {
-    const places = await makePostRequest("/api/queryPlacesfromQId", {
-      id: props.router.query.location,
-    });
-    console.log(places);
-    return places;
-  };
+  // const callExistLoction = async () => {
+  //   const places = await makePostRequest("/api/queryPlacesfromQId", {
+  //     id: props.router.query.location,
+  //   });
+  //   console.log(places);
+  //   return places;
+  // };
 
   useEffect(() => {
     localStorage.setItem("path", props.router.query.location);
@@ -73,34 +73,35 @@ function Mapbox(props) {
     });
 
     //get location serp or get from db
-    if (props.router.query.exist == "exist") {
-      //and turn it into geojson obj
-      callExistLoction().then((featureCollection) => {
-        console.log(featureCollection);
-        setDestinationLength(featureCollection.features.length);
-        featureCollection.features.forEach(function (store, i) {
-          store.properties.id = i;
-        });
-        buildLocationList(featureCollection);
-        addMarkers(featureCollection);
-      });
-    } else {
-      fetchSerp().then((serpResult) => {
-        console.log(serpResult);
-        console.log(serpResult.features);
-        setDestinationLength(serpResult.features.length);
+    // if (props.router.query.exist == "exist") {
+    //   //and turn it into geojson obj
+    //   callExistLoction().then((featureCollection) => {
+    //     console.log(featureCollection);
+    //     setDestinationLength(featureCollection.features.length);
+    //     featureCollection.features.forEach(function (store, i) {
+    //       store.properties.id = i;
+    //     });
+    //     buildLocationList(featureCollection);
+    //     addMarkers(featureCollection);
+    //   });
+    // } else {
 
-        buildLocationList(serpResult);
-        addMarkers(serpResult);
-      });
-      // if (props.router.query.exist == "exist") {
+    //   // if (props.router.query.exist == "exist") {
 
-      //   setSerpResult(places);
-      //   console.log(serpResult);
-      // } else {
+    //   //   setSerpResult(places);
+    //   //   console.log(serpResult);
+    //   // } else {
 
-      // }
-    }
+    //   // }
+    // }
+    fetchSerp().then((serpResult) => {
+      console.log(serpResult);
+      console.log(serpResult.features);
+      setDestinationLength(serpResult.features.length);
+
+      buildLocationList(serpResult);
+      addMarkers(serpResult);
+    });
   });
 
   function flyToStore(currentFeature) {
@@ -130,7 +131,7 @@ function Mapbox(props) {
 
   function buildLocationList(stores) {
     setDetails(stores.features);
-    posthog?.capture("map loaded", { property: stores.features });
+    //posthog?.capture("map loaded", { property: stores.features });
     for (const store of stores.features) {
       /* Add a new listing section to the sidebar. */
       const listings = document.getElementById("listings");
